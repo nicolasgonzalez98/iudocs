@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\MateriaController as AdminMateriaController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\MateriaController;
+use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
@@ -22,6 +23,11 @@ Route::get('/', function () {
 Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/dashboard', [MateriaController::class, 'index'])->name('dashboard');
     Route::get('/materias/{materia}', [MateriaController::class, 'show'])->name('materias.show');
+
+    // Materiales (apuntes / exámenes)
+    Route::post('/materias/{materia}/materiales', [MaterialController::class, 'store'])->name('materiales.store');
+    Route::get('/materiales/{material}/descargar', [MaterialController::class, 'download'])->name('materiales.download');
+    Route::delete('/materiales/{material}', [MaterialController::class, 'destroy'])->name('materiales.destroy');
 });
 
 // Pantallas de acceso (fuera del gating 'active' para no crear loops)
