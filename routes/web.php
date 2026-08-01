@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Admin\MateriaController as AdminMateriaController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\MateriaController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
@@ -16,9 +18,11 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'active'])->name('dashboard');
+// Home: grilla de materias (solo usuarios activos)
+Route::middleware(['auth', 'active'])->group(function () {
+    Route::get('/dashboard', [MateriaController::class, 'index'])->name('dashboard');
+    Route::get('/materias/{materia}', [MateriaController::class, 'show'])->name('materias.show');
+});
 
 // Pantallas de acceso (fuera del gating 'active' para no crear loops)
 Route::middleware('auth')->group(function () {
@@ -54,6 +58,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/users', [AdminUserController::class, 'index'])->name('users');
     Route::patch('/users/{user}/activate', [AdminUserController::class, 'activate'])->name('users.activate');
     Route::patch('/users/{user}/block', [AdminUserController::class, 'block'])->name('users.block');
+
+    Route::get('/materias', [AdminMateriaController::class, 'index'])->name('materias');
+    Route::post('/materias', [AdminMateriaController::class, 'store'])->name('materias.store');
+    Route::patch('/materias/{materia}', [AdminMateriaController::class, 'update'])->name('materias.update');
+    Route::delete('/materias/{materia}', [AdminMateriaController::class, 'destroy'])->name('materias.destroy');
 });
 
 require __DIR__.'/auth.php';
