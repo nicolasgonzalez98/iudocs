@@ -34,9 +34,20 @@ const form = useForm({
     icon: '',
 });
 
-const openCreate = () => {
-    form.reset();
+// Reset explícito (garantiza id=null → crea, no edita)
+const resetForm = () => {
     form.clearErrors();
+    form.id = null;
+    form.nombre = '';
+    form.anio = '';
+    form.cuatrimestre = '';
+    form.catedra = '';
+    form.color = 'amber';
+    form.icon = '';
+};
+
+const openCreate = () => {
+    resetForm();
     showModal.value = true;
 };
 
@@ -57,7 +68,13 @@ const closeModal = () => {
 };
 
 const submit = () => {
-    const opts = { preserveScroll: true, onSuccess: closeModal };
+    const opts = {
+        preserveScroll: true,
+        onSuccess: () => {
+            closeModal();
+            resetForm();
+        },
+    };
     if (form.id) {
         form.patch(route('admin.materias.update', form.id), opts);
     } else {

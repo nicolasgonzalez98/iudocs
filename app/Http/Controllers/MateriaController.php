@@ -33,7 +33,7 @@ class MateriaController extends Controller
             ]);
 
         $topContributors = User::withCount('materials')
-            ->having('materials_count', '>', 0)
+            ->has('materials')
             ->orderByDesc('materials_count')
             ->limit(5)
             ->get(['id', 'name', 'avatar'])

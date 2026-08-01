@@ -64,9 +64,11 @@ const form = useForm({
 });
 
 const openUpload = (tipo = 'apunte') => {
-    form.reset();
     form.clearErrors();
+    form.titulo = '';
     form.tipo = tipo;
+    form.descripcion = '';
+    form.file = null;
     if (fileInput.value) fileInput.value.value = '';
     showModal.value = true;
 };
