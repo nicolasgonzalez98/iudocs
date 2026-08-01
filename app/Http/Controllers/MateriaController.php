@@ -30,7 +30,11 @@ class MateriaController extends Controller
         $user = auth()->user();
 
         $materials = $materia->materials()
-            ->with('user:id,name,avatar')
+            ->with([
+                'user:id,name,avatar',
+                'comments' => fn ($q) => $q->oldest(),
+                'comments.user:id,name,avatar',
+            ])
             ->latest()
             ->get();
 
@@ -48,6 +52,17 @@ class MateriaController extends Controller
                 'avatar' => $m->user->avatar,
             ],
             'can_delete' => $user->isAdmin() || $m->user_id === $user->id,
+            'comments_count' => $m->comments->count(),
+            'comments' => $m->comments->map(fn (\App\Models\Comment $c) => [
+                'id' => $c->id,
+                'body' => $c->body,
+                'created_at' => $c->created_at->format('d/m/Y H:i'),
+                'author' => [
+                    'name' => $c->user->name,
+                    'avatar' => $c->user->avatar,
+                ],
+                'can_delete' => $user->isAdmin() || $c->user_id === $user->id,
+            ])->values(),
         ];
 
         return Inertia::render('Materias/Show', [

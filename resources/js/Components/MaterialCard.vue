@@ -5,7 +5,7 @@ defineProps({
     material: { type: Object, required: true },
 });
 
-defineEmits(['delete']);
+defineEmits(['delete', 'comments']);
 </script>
 
 <template>
@@ -23,12 +23,20 @@ defineEmits(['delete']);
                 Subido por {{ material.uploader.name }} · {{ material.created_at }} ·
                 {{ formatBytes(material.size) }}
             </div>
+
+            <button
+                type="button"
+                @click="$emit('comments', material)"
+                class="mt-2 inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-stone-500 transition hover:bg-stone-100 hover:text-brand-600"
+            >
+                💬 Comentarios ({{ material.comments_count }})
+            </button>
         </div>
 
         <div class="flex shrink-0 items-center gap-1">
             <a
                 :href="route('materiales.download', material.id)"
-                class="rounded-lg px-3 py-1.5 text-sm font-semibold text-amber-600 transition hover:bg-amber-50"
+                class="rounded-lg px-3 py-1.5 text-sm font-semibold text-brand-600 transition hover:bg-brand-50"
             >
                 Descargar
             </a>

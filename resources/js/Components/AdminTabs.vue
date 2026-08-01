@@ -3,7 +3,7 @@ import { Link } from '@inertiajs/vue3';
 
 const tabClass = (active) =>
     active
-        ? 'border-amber-500 text-ink'
+        ? 'border-brand-500 text-ink'
         : 'border-transparent text-stone-500 hover:border-stone-300 hover:text-stone-800';
 </script>
 

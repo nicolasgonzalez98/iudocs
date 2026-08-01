@@ -1,11 +1,14 @@
-# Altillo — Contexto para agentes Claude
+# IUDocs — Contexto para agentes Claude
 
 > Este archivo se auto-carga en Claude Code para esta carpeta y **manda** al trabajar acá.
 > Idioma de trabajo: **español (Argentina), informal ("vos")**.
+>
+> ℹ️ La app se llama **IUDocs** (antes "Altillo"). La **carpeta y el repo git siguen siendo
+> `altillo`** (no se renombraron para no romper rutas/remotos); el nombre de marca visible es IUDocs.
 
 ---
 
-## 1. Qué es Altillo
+## 1. Qué es IUDocs
 
 **Portal colaborativo de apuntes y exámenes para estudiantes universitarios** (arranca con
 Biotecnología). Los estudiantes inician sesión con **Google**, navegan por **materias**, y
@@ -22,7 +25,7 @@ desparramados en mil WhatsApp y Drives distintos.
 ## 2. Perfil del usuario (Nicolás)
 
 Dev **Full Stack** (React, Vue, Laravel, Node/Express, Python/Django). Proyecto para el
-**portfolio / búsqueda laboral**. Altillo suma **variedad B2C / colaborativo** y un **stack
+**portfolio / búsqueda laboral**. IUDocs suma **variedad B2C / colaborativo** y un **stack
 distinto** al de DocuMind (Python/React): acá es **PHP/Laravel + Vue**. Muestra OAuth,
 subida de archivos, roles/moderación y features sociales.
 
@@ -108,7 +111,7 @@ Stripe, Vercel, shadcn/ui). **Toda la app sigue un mismo Design System**, no pan
 - **Base:** fondo crema `#FEFCF8`, superficies/cards blanco, texto `#241C12`; neutros cálidos (stone).
 - **Tipografía:** Inter (UI). Mono (JetBrains/ui-mono) para código/IDs si hace falta.
 - **Spacing:** escala 4px. **Radios:** sm 6 · md 8 · lg 12. **Sombras:** sutiles, por capas.
-- A diferencia de DocuMind (dark-first teal), Altillo es **claro y cálido** ("apuntes / biblioteca").
+- A diferencia de DocuMind (dark-first teal), IUDocs es **claro y cálido** ("apuntes / biblioteca").
 
 ---
 
@@ -132,4 +135,4 @@ Stripe, Vercel, shadcn/ui). **Toda la app sigue un mismo Design System**, no pan
 
 - Repo git local (por ahora sin remoto; se conecta más adelante, como DocuMind).
 - Este `CLAUDE.md` es la **fuente de verdad portable** — la memoria de Claude Code es local y NO viaja.
-- Altillo vive como subcarpeta del repo "meta" del portfolio (`Proyectos CV`), que lo **ignora** (repo propio).
+- IUDocs vive como subcarpeta del repo "meta" del portfolio (`Proyectos CV`), que lo **ignora** (repo propio).

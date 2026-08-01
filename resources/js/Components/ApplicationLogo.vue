@@ -1,5 +1,5 @@
 <template>
-    <!-- Libro abierto: la metáfora de "apuntes / biblioteca" de Altillo. Usa currentColor -->
+    <!-- Libro abierto: la metáfora de "apuntes / biblioteca" de IUDocs. Usa currentColor -->
     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path
             d="M12 6.04C10.36 4.9 8.11 4.25 5.5 4.25c-.76 0-1.5.06-2.19.18A1 1 0 0 0 2.5 5.42v12.3a1 1 0 0 0 1.18.98c.58-.1 1.2-.15 1.82-.15 2.5 0 4.62.66 6 1.7 1.38-1.04 3.5-1.7 6-1.7.62 0 1.24.05 1.82.15a1 1 0 0 0 1.18-.98V5.42a1 1 0 0 0-.81-.99A13.2 13.2 0 0 0 18.5 4.25c-2.61 0-4.86.65-6.5 1.79Z"

@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
+import ConfirmModal from '@/Components/ConfirmModal.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
@@ -24,9 +25,9 @@ const showingNavigationDropdown = ref(false);
                             <div class="flex shrink-0 items-center">
                                 <Link :href="route('dashboard')" class="flex items-center gap-2">
                                     <ApplicationLogo
-                                        class="block h-8 w-auto text-amber-500"
+                                        class="block h-8 w-auto text-brand-500"
                                     />
-                                    <span class="text-lg font-semibold tracking-tight text-ink">Altillo</span>
+                                    <span class="text-lg font-semibold tracking-tight text-ink">IUDocs</span>
                                 </Link>
                             </div>
 
@@ -209,5 +210,8 @@ const showingNavigationDropdown = ref(false);
                 <slot />
             </main>
         </div>
+
+        <!-- Modal de confirmación global -->
+        <ConfirmModal />
     </div>
 </template>

@@ -37,7 +37,7 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        $adminEmail = config('altillo.admin_email');
+        $adminEmail = config('iudocs.admin_email');
         $isAdmin = $adminEmail && strtolower($request->email) === strtolower($adminEmail);
 
         $user = User::create([

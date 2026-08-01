@@ -1,5 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import CommentsPanel from '@/Components/CommentsPanel.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import MaterialCard from '@/Components/MaterialCard.vue';
@@ -10,8 +11,11 @@ import Spinner from '@/Components/Spinner.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { formatBytes } from '@/files';
 import { materiaColor, periodoLabel } from '@/materiaColors';
+import { useConfirm } from '@/useConfirm';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
+
+const { confirm } = useConfirm();
 
 const props = defineProps({
     materia: { type: Object, required: true },
@@ -22,6 +26,15 @@ const props = defineProps({
 
 const showModal = ref(false);
 const fileInput = ref(null);
+
+// Panel de comentarios: guardamos el id y buscamos el material actualizado en props
+const openMaterialId = ref(null);
+const openMaterial = computed(
+    () =>
+        [...props.apuntes, ...props.campus, ...props.examenes].find(
+            (m) => m.id === openMaterialId.value,
+        ) ?? null,
+);
 
 const form = useForm({
     titulo: '',
@@ -58,10 +71,14 @@ const submit = () => {
     });
 };
 
-const destroy = (material) => {
-    if (confirm(`¿Borrar "${material.titulo}"? Esta acción no se puede deshacer.`)) {
-        router.delete(route('materiales.destroy', material.id), { preserveScroll: true });
-    }
+const destroy = async (material) => {
+    const ok = await confirm({
+        title: 'Borrar material',
+        message: `¿Borrar "${material.titulo}"? Esta acción no se puede deshacer.`,
+        confirmText: 'Borrar',
+        danger: true,
+    });
+    if (ok) router.delete(route('materiales.destroy', material.id), { preserveScroll: true });
 };
 </script>
 
@@ -111,7 +128,7 @@ const destroy = (material) => {
                     <button
                         type="button"
                         @click="openUpload('apunte')"
-                        class="text-sm font-medium text-amber-600 hover:text-amber-700"
+                        class="text-sm font-medium text-brand-600 hover:text-brand-700"
                     >
                         + Agregar apunte
                     </button>
@@ -126,6 +143,7 @@ const destroy = (material) => {
                         :key="m.id"
                         :material="m"
                         @delete="destroy"
+                        @comments="openMaterialId = $event.id"
                     />
                 </div>
             </section>
@@ -139,7 +157,7 @@ const destroy = (material) => {
                     <button
                         type="button"
                         @click="openUpload('campus')"
-                        class="text-sm font-medium text-amber-600 hover:text-amber-700"
+                        class="text-sm font-medium text-brand-600 hover:text-brand-700"
                     >
                         + Agregar del campus
                     </button>
@@ -154,6 +172,7 @@ const destroy = (material) => {
                         :key="m.id"
                         :material="m"
                         @delete="destroy"
+                        @comments="openMaterialId = $event.id"
                     />
                 </div>
             </section>
@@ -167,7 +186,7 @@ const destroy = (material) => {
                     <button
                         type="button"
                         @click="openUpload('examen')"
-                        class="text-sm font-medium text-amber-600 hover:text-amber-700"
+                        class="text-sm font-medium text-brand-600 hover:text-brand-700"
                     >
                         + Agregar examen
                     </button>
@@ -182,10 +201,18 @@ const destroy = (material) => {
                         :key="m.id"
                         :material="m"
                         @delete="destroy"
+                        @comments="openMaterialId = $event.id"
                     />
                 </div>
             </section>
         </div>
+
+        <!-- Panel de comentarios -->
+        <CommentsPanel
+            v-if="openMaterial"
+            :material="openMaterial"
+            @close="openMaterialId = null"
+        />
 
         <!-- Modal de subida -->
         <Modal :show="showModal" @close="closeModal">
@@ -200,7 +227,7 @@ const destroy = (material) => {
                             type="button"
                             @click="form.tipo = 'apunte'"
                             class="rounded-lg border px-3 py-2 text-sm font-semibold transition"
-                            :class="form.tipo === 'apunte' ? 'border-amber-500 bg-amber-50 text-amber-700' : 'border-stone-300 text-stone-600 hover:bg-stone-50'"
+                            :class="form.tipo === 'apunte' ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-stone-300 text-stone-600 hover:bg-stone-50'"
                         >
                             📝 Apunte
                         </button>
@@ -208,7 +235,7 @@ const destroy = (material) => {
                             type="button"
                             @click="form.tipo = 'campus'"
                             class="rounded-lg border px-3 py-2 text-sm font-semibold transition"
-                            :class="form.tipo === 'campus' ? 'border-amber-500 bg-amber-50 text-amber-700' : 'border-stone-300 text-stone-600 hover:bg-stone-50'"
+                            :class="form.tipo === 'campus' ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-stone-300 text-stone-600 hover:bg-stone-50'"
                         >
                             🏫 Campus
                         </button>
@@ -216,7 +243,7 @@ const destroy = (material) => {
                             type="button"
                             @click="form.tipo = 'examen'"
                             class="rounded-lg border px-3 py-2 text-sm font-semibold transition"
-                            :class="form.tipo === 'examen' ? 'border-amber-500 bg-amber-50 text-amber-700' : 'border-stone-300 text-stone-600 hover:bg-stone-50'"
+                            :class="form.tipo === 'examen' ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-stone-300 text-stone-600 hover:bg-stone-50'"
                         >
                             🎓 Examen
                         </button>
@@ -245,7 +272,7 @@ const destroy = (material) => {
                         id="descripcion"
                         v-model="form.descripcion"
                         rows="2"
-                        class="mt-1 block w-full rounded-lg border-stone-300 shadow-sm focus:border-amber-500 focus:ring-amber-500"
+                        class="mt-1 block w-full rounded-lg border-stone-300 shadow-sm focus:border-brand-500 focus:ring-brand-500"
                         placeholder="Ej: Le falta la última hoja"
                     ></textarea>
                     <InputError class="mt-2" :message="form.errors.descripcion" />
@@ -255,7 +282,7 @@ const destroy = (material) => {
                 <div class="mt-4">
                     <InputLabel value="Archivo" />
                     <label
-                        class="mt-1 flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-stone-300 bg-stone-50 px-4 py-6 text-center transition hover:border-amber-400 hover:bg-amber-50/40"
+                        class="mt-1 flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-stone-300 bg-stone-50 px-4 py-6 text-center transition hover:border-brand-400 hover:bg-brand-50/40"
                     >
                         <input
                             ref="fileInput"
@@ -282,7 +309,7 @@ const destroy = (material) => {
                 <div v-if="form.progress" class="mt-4">
                     <div class="h-2 w-full overflow-hidden rounded-full bg-stone-200">
                         <div
-                            class="h-full rounded-full bg-amber-500 transition-all"
+                            class="h-full rounded-full bg-brand-500 transition-all"
                             :style="{ width: `${form.progress.percentage}%` }"
                         ></div>
                     </div>

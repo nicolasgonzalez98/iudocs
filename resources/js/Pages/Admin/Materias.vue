@@ -9,8 +9,11 @@ import SecondaryButton from '@/Components/SecondaryButton.vue';
 import Spinner from '@/Components/Spinner.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { MATERIA_COLORS, materiaColor, periodoLabel } from '@/materiaColors';
+import { useConfirm } from '@/useConfirm';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
+
+const { confirm } = useConfirm();
 
 defineProps({
     materias: { type: Array, default: () => [] },
@@ -60,10 +63,14 @@ const submit = () => {
     }
 };
 
-const destroy = (m) => {
-    if (confirm(`¿Borrar la materia "${m.nombre}"? Se van a borrar también sus materiales.`)) {
-        router.delete(route('admin.materias.destroy', m.id), { preserveScroll: true });
-    }
+const destroy = async (m) => {
+    const ok = await confirm({
+        title: 'Borrar materia',
+        message: `¿Borrar "${m.nombre}"? Se van a borrar también todos sus materiales.`,
+        confirmText: 'Borrar',
+        danger: true,
+    });
+    if (ok) router.delete(route('admin.materias.destroy', m.id), { preserveScroll: true });
 };
 </script>
 
@@ -166,7 +173,7 @@ const destroy = (m) => {
                         <select
                             id="anio"
                             v-model="form.anio"
-                            class="mt-1 block w-full rounded-lg border-stone-300 shadow-sm focus:border-amber-500 focus:ring-amber-500"
+                            class="mt-1 block w-full rounded-lg border-stone-300 shadow-sm focus:border-brand-500 focus:ring-brand-500"
                         >
                             <option value="">—</option>
                             <option v-for="a in 7" :key="a" :value="a">{{ a }}º año</option>
@@ -178,7 +185,7 @@ const destroy = (m) => {
                         <select
                             id="cuatri"
                             v-model="form.cuatrimestre"
-                            class="mt-1 block w-full rounded-lg border-stone-300 shadow-sm focus:border-amber-500 focus:ring-amber-500"
+                            class="mt-1 block w-full rounded-lg border-stone-300 shadow-sm focus:border-brand-500 focus:ring-brand-500"
                         >
                             <option value="">—</option>
                             <option :value="1">1º cuatrimestre</option>
@@ -212,7 +219,7 @@ const destroy = (m) => {
                             type="button"
                             @click="form.icon = form.icon === e ? '' : e"
                             class="flex h-9 w-9 items-center justify-center rounded-lg border text-lg transition"
-                            :class="form.icon === e ? 'border-amber-500 bg-amber-50' : 'border-stone-200 hover:bg-stone-50'"
+                            :class="form.icon === e ? 'border-brand-500 bg-brand-50' : 'border-stone-200 hover:bg-stone-50'"
                         >
                             {{ e }}
                         </button>

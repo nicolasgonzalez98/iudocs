@@ -8,8 +8,8 @@ import { Head, Link } from '@inertiajs/vue3';
 
     <div class="flex min-h-screen flex-col items-center justify-center bg-cream px-6 py-12 text-ink">
         <Link href="/" class="mb-8 flex flex-col items-center gap-2">
-            <ApplicationLogo class="h-14 w-14 text-amber-500" />
-            <span class="text-lg font-semibold tracking-tight">Altillo</span>
+            <ApplicationLogo class="h-14 w-14 text-brand-500" />
+            <span class="text-lg font-semibold tracking-tight">IUDocs</span>
         </Link>
 
         <div
@@ -22,7 +22,7 @@ import { Head, Link } from '@inertiajs/vue3';
             </div>
             <h1 class="mt-5 text-xl font-semibold">Cuenta bloqueada</h1>
             <p class="mt-3 text-sm leading-relaxed text-stone-600">
-                Tu acceso al Altillo fue deshabilitado por una admin. Si creés que es un error,
+                Tu acceso a IUDocs fue deshabilitado por una admin. Si creés que es un error,
                 hablá con la persona que administra la página.
             </p>
 
@@ -31,7 +31,7 @@ import { Head, Link } from '@inertiajs/vue3';
                     :href="route('logout')"
                     method="post"
                     as="button"
-                    class="text-sm font-medium text-stone-500 underline-offset-4 transition hover:text-amber-600 hover:underline"
+                    class="text-sm font-medium text-stone-500 underline-offset-4 transition hover:text-brand-600 hover:underline"
                 >
                     Cerrar sesión
                 </Link>

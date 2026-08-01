@@ -27,9 +27,9 @@ const sizeClass = computed(
 const toneClass = computed(
     () =>
         ({
-            amber: 'bg-amber-200 text-amber-800',
+            amber: 'bg-brand-200 text-brand-800',
             stone: 'bg-stone-200 text-stone-600',
-        }[props.tone] ?? 'bg-amber-200 text-amber-800'),
+        }[props.tone] ?? 'bg-brand-200 text-brand-800'),
 );
 
 const showImg = computed(() => props.avatar && !failed.value);

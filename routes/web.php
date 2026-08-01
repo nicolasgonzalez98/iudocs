@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\MateriaController as AdminMateriaController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\MateriaController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\ProfileController;
@@ -28,6 +29,10 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::post('/materias/{materia}/materiales', [MaterialController::class, 'store'])->name('materiales.store');
     Route::get('/materiales/{material}/descargar', [MaterialController::class, 'download'])->name('materiales.download');
     Route::delete('/materiales/{material}', [MaterialController::class, 'destroy'])->name('materiales.destroy');
+
+    // Comentarios
+    Route::post('/materiales/{material}/comentarios', [CommentController::class, 'store'])->name('comentarios.store');
+    Route::delete('/comentarios/{comment}', [CommentController::class, 'destroy'])->name('comentarios.destroy');
 });
 
 // Pantallas de acceso (fuera del gating 'active' para no crear loops)

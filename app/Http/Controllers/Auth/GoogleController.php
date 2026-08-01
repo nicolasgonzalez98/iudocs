@@ -46,7 +46,7 @@ class GoogleController extends Controller
             ]);
         }
 
-        $adminEmail = config('altillo.admin_email');
+        $adminEmail = config('iudocs.admin_email');
         $isAdmin = $adminEmail
             && strtolower((string) $googleUser->getEmail()) === strtolower($adminEmail);
 

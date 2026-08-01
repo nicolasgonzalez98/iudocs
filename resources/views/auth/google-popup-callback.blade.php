@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Altillo</title>
+    <title>IUDocs</title>
     <style>
         body {
             margin: 0;
@@ -20,8 +20,8 @@
         .spinner {
             width: 28px; height: 28px;
             margin: 0 auto 1rem;
-            border: 3px solid #FDE68A;
-            border-top-color: #F59E0B;
+            border: 3px solid #DBEBC7;
+            border-top-color: #4F8A38;
             border-radius: 50%;
             animation: spin .8s linear infinite;
         }

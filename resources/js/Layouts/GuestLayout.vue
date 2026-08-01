@@ -9,8 +9,8 @@ import { Link } from '@inertiajs/vue3';
     >
         <div>
             <Link href="/" class="flex flex-col items-center gap-2">
-                <ApplicationLogo class="h-16 w-16 text-amber-500" />
-                <span class="text-lg font-semibold tracking-tight text-ink">Altillo</span>
+                <ApplicationLogo class="h-16 w-16 text-brand-500" />
+                <span class="text-lg font-semibold tracking-tight text-ink">IUDocs</span>
             </Link>
         </div>
 

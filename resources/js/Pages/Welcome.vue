@@ -39,14 +39,14 @@ const features = [
 </script>
 
 <template>
-    <Head title="Altillo — apuntes de la cursada" />
+    <Head title="IUDocs — apuntes de la cursada" />
 
     <div class="min-h-screen bg-cream text-ink">
         <!-- Header -->
         <header class="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
             <div class="flex items-center gap-2">
-                <ApplicationLogo class="h-8 w-8 text-amber-500" />
-                <span class="text-xl font-semibold tracking-tight">Altillo</span>
+                <ApplicationLogo class="h-8 w-8 text-brand-500" />
+                <span class="text-xl font-semibold tracking-tight">IUDocs</span>
             </div>
 
             <nav v-if="canLogin" class="flex items-center gap-2">
@@ -55,7 +55,7 @@ const features = [
                     :href="route('dashboard')"
                     class="rounded-lg px-4 py-2 text-sm font-semibold text-stone-700 transition hover:bg-stone-100"
                 >
-                    Ir al Altillo
+                    Ir a IUDocs
                 </Link>
 
                 <template v-else>
@@ -68,7 +68,7 @@ const features = [
                     <Link
                         v-if="canRegister"
                         :href="route('register')"
-                        class="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-600"
+                        class="rounded-lg bg-brand-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600"
                     >
                         Registrarme
                     </Link>
@@ -80,13 +80,13 @@ const features = [
         <main class="mx-auto max-w-6xl px-6">
             <section class="py-16 text-center sm:py-24">
                 <span
-                    class="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700"
+                    class="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700"
                 >
-                    📖 El altillo de apuntes de la cursada
+                    📖 Apuntes y exámenes de la cursada
                 </span>
                 <h1 class="mx-auto mt-6 max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl">
                     Todos los apuntes y exámenes,
-                    <span class="text-amber-600">en un solo lugar</span>
+                    <span class="text-brand-600">en un solo lugar</span>
                 </h1>
                 <p class="mx-auto mt-5 max-w-xl text-lg text-stone-600">
                     Un portal colaborativo para compartir apuntes y exámenes por materia.
@@ -97,9 +97,9 @@ const features = [
                     <Link
                         v-if="canRegister && !$page.props.auth.user"
                         :href="route('register')"
-                        class="w-full rounded-lg bg-amber-500 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-600 sm:w-auto"
+                        class="w-full rounded-lg bg-brand-500 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600 sm:w-auto"
                     >
-                        Sumarme al Altillo
+                        Sumarme a IUDocs
                     </Link>
                     <Link
                         v-if="!$page.props.auth.user"
@@ -111,9 +111,9 @@ const features = [
                     <Link
                         v-if="$page.props.auth.user"
                         :href="route('dashboard')"
-                        class="w-full rounded-lg bg-amber-500 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-600 sm:w-auto"
+                        class="w-full rounded-lg bg-brand-500 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600 sm:w-auto"
                     >
-                        Entrar al Altillo
+                        Entrar a IUDocs
                     </Link>
                 </div>
             </section>
@@ -137,7 +137,7 @@ const features = [
             <div
                 class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-6 py-6 text-sm text-stone-500 sm:flex-row"
             >
-                <span>© {{ new Date().getFullYear() }} Altillo</span>
+                <span>© {{ new Date().getFullYear() }} IUDocs</span>
                 <span>Hecho para estudiar en equipo 🧉</span>
             </div>
         </footer>

@@ -37,7 +37,7 @@ const groups = computed(() => {
                 <Link
                     v-if="isAdmin"
                     :href="route('admin.materias')"
-                    class="text-sm font-medium text-amber-600 hover:text-amber-700"
+                    class="text-sm font-medium text-brand-600 hover:text-brand-700"
                 >
                     Gestionar materias →
                 </Link>
@@ -63,7 +63,7 @@ const groups = computed(() => {
                 <Link
                     v-if="isAdmin"
                     :href="route('admin.materias')"
-                    class="mt-5 inline-flex items-center justify-center rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-600"
+                    class="mt-5 inline-flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600"
                 >
                     + Crear materia
                 </Link>
@@ -91,7 +91,7 @@ const groups = computed(() => {
                                 {{ m.icon || '📘' }}
                             </div>
                             <div class="min-w-0">
-                                <div class="truncate font-semibold text-ink group-hover:text-amber-700">
+                                <div class="truncate font-semibold text-ink group-hover:text-brand-700">
                                     {{ m.nombre }}
                                 </div>
                                 <div v-if="m.anio || m.cuatrimestre" class="mt-0.5 text-xs text-stone-500">

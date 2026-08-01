@@ -21,7 +21,7 @@ import { Head } from '@inertiajs/vue3';
                     class="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm"
                 >
                     <div class="p-6 text-ink">
-                        <h3 class="text-lg font-semibold">¡Bienvenido/a al Altillo! 📚</h3>
+                        <h3 class="text-lg font-semibold">¡Bienvenido/a a IUDocs! 📚</h3>
                         <p class="mt-1 text-sm text-stone-600">
                             Acá van a vivir los apuntes y exámenes de la cursada, ordenados por materia.
                             Pronto vas a poder navegar las materias y subir tu primer apunte.

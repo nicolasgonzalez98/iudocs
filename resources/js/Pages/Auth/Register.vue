@@ -109,7 +109,7 @@ const submit = () => {
 
         <p class="mt-6 text-center text-sm text-stone-500">
             ¿Ya tenés cuenta?
-            <Link :href="route('login')" class="font-semibold text-amber-600 hover:text-amber-700">
+            <Link :href="route('login')" class="font-semibold text-brand-600 hover:text-brand-700">
                 Iniciá sesión
             </Link>
         </p>

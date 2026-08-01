@@ -14,7 +14,7 @@ const loginWithGoogle = () => {
 
     const popup = window.open(
         route('google.redirect', { popup: 1 }),
-        'altillo-google-login',
+        'iudocs-google-login',
         `width=${w},height=${h},left=${left},top=${top}`,
     );
 
@@ -29,7 +29,7 @@ const loginWithGoogle = () => {
     <button
         type="button"
         @click="loginWithGoogle"
-        class="inline-flex w-full items-center justify-center gap-3 rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm font-semibold text-stone-700 shadow-sm transition duration-150 ease-in-out hover:bg-stone-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-cream"
+        class="inline-flex w-full items-center justify-center gap-3 rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm font-semibold text-stone-700 shadow-sm transition duration-150 ease-in-out hover:bg-stone-50 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-cream"
     >
         <svg class="h-5 w-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path

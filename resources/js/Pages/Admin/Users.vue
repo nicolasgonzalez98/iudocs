@@ -3,8 +3,11 @@ import AdminTabs from '@/Components/AdminTabs.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import StatusBadge from '@/Components/StatusBadge.vue';
 import UserAvatar from '@/Components/UserAvatar.vue';
+import { useConfirm } from '@/useConfirm';
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
+
+const { confirm } = useConfirm();
 
 defineProps({
     pending: { type: Array, default: () => [] },
@@ -29,10 +32,14 @@ const activate = (user) => {
     );
 };
 
-const block = (user) => {
-    if (!confirm(`¿Seguro que querés bloquear a ${user.name}? No va a poder entrar al Altillo.`)) {
-        return;
-    }
+const block = async (user) => {
+    const ok = await confirm({
+        title: 'Bloquear usuario',
+        message: `¿Seguro que querés bloquear a ${user.name}? No va a poder entrar a IUDocs.`,
+        confirmText: 'Bloquear',
+        danger: true,
+    });
+    if (!ok) return;
     router.patch(
         route('admin.users.block', user.id),
         {},
@@ -59,7 +66,7 @@ const block = (user) => {
             <!-- Resumen -->
             <div class="mb-8 grid grid-cols-3 gap-4">
                 <div class="rounded-xl border border-stone-200 bg-white p-4 text-center shadow-sm">
-                    <div class="text-2xl font-bold text-amber-600">{{ counts.pending }}</div>
+                    <div class="text-2xl font-bold text-brand-600">{{ counts.pending }}</div>
                     <div class="mt-1 text-xs font-medium uppercase tracking-wide text-stone-500">Pendientes</div>
                 </div>
                 <div class="rounded-xl border border-stone-200 bg-white p-4 text-center shadow-sm">
@@ -87,7 +94,7 @@ const block = (user) => {
                     <li
                         v-for="user in pending"
                         :key="user.id"
-                        class="flex flex-col gap-3 rounded-xl border border-amber-200 bg-amber-50/40 p-4 sm:flex-row sm:items-center sm:justify-between"
+                        class="flex flex-col gap-3 rounded-xl border border-brand-200 bg-brand-50/40 p-4 sm:flex-row sm:items-center sm:justify-between"
                     >
                         <div class="flex items-center gap-3">
                             <UserAvatar :name="user.name" :avatar="user.avatar" size="md" tone="amber" />
@@ -102,7 +109,7 @@ const block = (user) => {
                                 type="button"
                                 :disabled="busyId === user.id"
                                 @click="activate(user)"
-                                class="inline-flex items-center justify-center rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-cream disabled:opacity-50"
+                                class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-cream disabled:opacity-50"
                             >
                                 Aprobar
                             </button>
@@ -142,7 +149,7 @@ const block = (user) => {
                                         <div>
                                             <div class="font-medium text-ink">
                                                 {{ user.name }}
-                                                <span v-if="user.role === 'admin'" class="ml-1 text-xs font-semibold text-amber-600">· admin</span>
+                                                <span v-if="user.role === 'admin'" class="ml-1 text-xs font-semibold text-brand-600">· admin</span>
                                             </div>
                                             <div class="text-stone-500">{{ user.email }}</div>
                                         </div>
