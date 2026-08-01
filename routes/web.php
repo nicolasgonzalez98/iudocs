@@ -6,6 +6,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\MateriaController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SearchController;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -23,11 +24,15 @@ Route::get('/', function () {
 // Home: grilla de materias (solo usuarios activos)
 Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/dashboard', [MateriaController::class, 'index'])->name('dashboard');
+    Route::get('/buscar', [SearchController::class, 'index'])->name('search');
     Route::get('/materias/{materia}', [MateriaController::class, 'show'])->name('materias.show');
 
     // Materiales (apuntes / exámenes)
     Route::post('/materias/{materia}/materiales', [MaterialController::class, 'store'])->name('materiales.store');
     Route::get('/materiales/{material}/descargar', [MaterialController::class, 'download'])->name('materiales.download');
+    Route::post('/materiales/{material}/voto', [MaterialController::class, 'toggleVote'])->name('materiales.vote');
+    Route::post('/materiales/{material}/favorito', [MaterialController::class, 'toggleFavorite'])->name('materiales.favorite');
+    Route::get('/mis-apuntes', [MaterialController::class, 'mine'])->name('materiales.mine');
     Route::delete('/materiales/{material}', [MaterialController::class, 'destroy'])->name('materiales.destroy');
 
     // Comentarios

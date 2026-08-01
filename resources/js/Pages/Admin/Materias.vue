@@ -29,6 +29,7 @@ const form = useForm({
     nombre: '',
     anio: '',
     cuatrimestre: '',
+    catedra: '',
     color: 'amber',
     icon: '',
 });
@@ -45,6 +46,7 @@ const openEdit = (m) => {
     form.nombre = m.nombre;
     form.anio = m.anio ?? '';
     form.cuatrimestre = m.cuatrimestre ?? '';
+    form.catedra = m.catedra ?? '';
     form.color = m.color ?? 'amber';
     form.icon = m.icon ?? '';
     showModal.value = true;
@@ -123,6 +125,7 @@ const destroy = async (m) => {
                             <div v-if="m.anio || m.cuatrimestre" class="text-xs text-stone-500">
                                 {{ periodoLabel(m.anio, m.cuatrimestre) }}
                             </div>
+                            <div v-if="m.catedra" class="text-xs text-stone-400">{{ m.catedra }}</div>
                         </div>
                     </div>
 
@@ -193,6 +196,18 @@ const destroy = async (m) => {
                         </select>
                         <InputError class="mt-2" :message="form.errors.cuatrimestre" />
                     </div>
+                </div>
+
+                <div class="mt-4">
+                    <InputLabel for="catedra" value="Cátedra / profesor (opcional)" />
+                    <TextInput
+                        id="catedra"
+                        v-model="form.catedra"
+                        type="text"
+                        class="mt-1 block w-full"
+                        placeholder="Ej: Cátedra Pérez"
+                    />
+                    <InputError class="mt-2" :message="form.errors.catedra" />
                 </div>
 
                 <div class="mt-4">

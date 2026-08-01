@@ -5,7 +5,7 @@ defineProps({
     material: { type: Object, required: true },
 });
 
-defineEmits(['delete', 'comments']);
+defineEmits(['delete', 'comments', 'vote', 'favorite']);
 </script>
 
 <template>
@@ -21,19 +21,39 @@ defineEmits(['delete', 'comments']);
             </p>
             <div class="mt-2 text-xs text-stone-400">
                 Subido por {{ material.uploader.name }} · {{ material.created_at }} ·
-                {{ formatBytes(material.size) }}
+                {{ formatBytes(material.size) }} · ⬇ {{ material.downloads }}
             </div>
 
-            <button
-                type="button"
-                @click="$emit('comments', material)"
-                class="mt-2 inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-stone-500 transition hover:bg-stone-100 hover:text-brand-600"
-            >
-                💬 Comentarios ({{ material.comments_count }})
-            </button>
+            <div class="mt-2 flex flex-wrap items-center gap-1">
+                <button
+                    type="button"
+                    @click="$emit('vote', material)"
+                    class="inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-xs font-medium transition"
+                    :class="material.has_voted
+                        ? 'border-brand-300 bg-brand-50 text-brand-700'
+                        : 'border-stone-200 text-stone-500 hover:bg-stone-100 hover:text-brand-600'"
+                >
+                    👍 Me sirvió ({{ material.helpful_count }})
+                </button>
+                <button
+                    type="button"
+                    @click="$emit('comments', material)"
+                    class="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-stone-500 transition hover:bg-stone-100 hover:text-brand-600"
+                >
+                    💬 Comentarios ({{ material.comments_count }})
+                </button>
+            </div>
         </div>
 
         <div class="flex shrink-0 items-center gap-1">
+            <button
+                type="button"
+                @click="$emit('favorite', material)"
+                :title="material.is_favorite ? 'Quitar de guardados' : 'Guardar'"
+                class="rounded-lg px-2 py-1.5 text-lg leading-none transition hover:bg-stone-100"
+            >
+                {{ material.is_favorite ? '⭐' : '☆' }}
+            </button>
             <a
                 :href="route('materiales.download', material.id)"
                 class="rounded-lg px-3 py-1.5 text-sm font-semibold text-brand-600 transition hover:bg-brand-50"

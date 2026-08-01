@@ -36,6 +36,26 @@ const openMaterial = computed(
         ) ?? null,
 );
 
+// Orden dentro de la materia (client-side, sobre lo ya cargado)
+const sortBy = ref('recientes');
+const SORTERS = {
+    recientes: (a, b) => b.id - a.id,
+    utiles: (a, b) => b.helpful_count - a.helpful_count || b.id - a.id,
+    descargados: (a, b) => b.downloads - a.downloads || b.id - a.id,
+};
+const sortList = (list) => [...list].sort(SORTERS[sortBy.value]);
+const sortedApuntes = computed(() => sortList(props.apuntes));
+const sortedCampus = computed(() => sortList(props.campus));
+const sortedExamenes = computed(() => sortList(props.examenes));
+
+const vote = (material) => {
+    router.post(route('materiales.vote', material.id), {}, { preserveScroll: true });
+};
+
+const favorite = (material) => {
+    router.post(route('materiales.favorite', material.id), {}, { preserveScroll: true });
+};
+
 const form = useForm({
     titulo: '',
     tipo: 'apunte',
@@ -106,8 +126,8 @@ const destroy = async (material) => {
                         <h2 class="truncate text-xl font-semibold leading-tight text-ink">
                             {{ materia.nombre }}
                         </h2>
-                        <p v-if="materia.anio || materia.cuatrimestre" class="text-xs text-stone-500">
-                            {{ periodoLabel(materia.anio, materia.cuatrimestre) }}
+                        <p v-if="materia.anio || materia.cuatrimestre || materia.catedra" class="text-xs text-stone-500">
+                            {{ [periodoLabel(materia.anio, materia.cuatrimestre), materia.catedra].filter(Boolean).join(' · ') }}
                         </p>
                     </div>
                 </div>
@@ -119,6 +139,21 @@ const destroy = async (material) => {
         </template>
 
         <div class="mx-auto max-w-4xl space-y-10 px-4 py-8 sm:px-6 lg:px-8">
+            <!-- Orden -->
+            <div class="flex justify-end">
+                <label class="inline-flex items-center gap-2 text-sm text-stone-500">
+                    Ordenar por
+                    <select
+                        v-model="sortBy"
+                        class="rounded-lg border-stone-300 py-1.5 text-sm shadow-sm focus:border-brand-500 focus:ring-brand-500"
+                    >
+                        <option value="recientes">Más recientes</option>
+                        <option value="utiles">Más útiles</option>
+                        <option value="descargados">Más descargados</option>
+                    </select>
+                </label>
+            </div>
+
             <!-- Apuntes -->
             <section>
                 <div class="mb-4 flex items-center justify-between">
@@ -139,11 +174,13 @@ const destroy = async (material) => {
                 </div>
                 <div v-else class="space-y-3">
                     <MaterialCard
-                        v-for="m in apuntes"
+                        v-for="m in sortedApuntes"
                         :key="m.id"
                         :material="m"
                         @delete="destroy"
                         @comments="openMaterialId = $event.id"
+                        @vote="vote"
+                        @favorite="favorite"
                     />
                 </div>
             </section>
@@ -168,11 +205,13 @@ const destroy = async (material) => {
                 </div>
                 <div v-else class="space-y-3">
                     <MaterialCard
-                        v-for="m in campus"
+                        v-for="m in sortedCampus"
                         :key="m.id"
                         :material="m"
                         @delete="destroy"
                         @comments="openMaterialId = $event.id"
+                        @vote="vote"
+                        @favorite="favorite"
                     />
                 </div>
             </section>
@@ -197,11 +236,13 @@ const destroy = async (material) => {
                 </div>
                 <div v-else class="space-y-3">
                     <MaterialCard
-                        v-for="m in examenes"
+                        v-for="m in sortedExamenes"
                         :key="m.id"
                         :material="m"
                         @delete="destroy"
                         @comments="openMaterialId = $event.id"
+                        @vote="vote"
+                        @favorite="favorite"
                     />
                 </div>
             </section>

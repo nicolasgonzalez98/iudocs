@@ -1,14 +1,19 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import UserAvatar from '@/Components/UserAvatar.vue';
 import { materiaColor, periodoLabel } from '@/materiaColors';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
 const props = defineProps({
     materias: { type: Array, default: () => [] },
+    recent: { type: Array, default: () => [] },
+    topContributors: { type: Array, default: () => [] },
 });
 
 const isAdmin = computed(() => usePage().props.auth.user.role === 'admin');
+
+const TIPO = { apunte: '📝', campus: '🏫', examen: '🎓' };
 
 // Agrupa por año (las materias sin año van al final)
 const groups = computed(() => {
@@ -102,6 +107,55 @@ const groups = computed(() => {
                     </div>
                 </section>
             </div>
+
+            <!-- Últimas subidas -->
+            <section v-if="recent.length" class="mt-12">
+                <h3 class="mb-4 text-sm font-semibold uppercase tracking-wide text-stone-500">
+                    🆕 Últimas subidas
+                </h3>
+                <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    <Link
+                        v-for="m in recent"
+                        :key="m.id"
+                        :href="route('materias.show', m.materia.id)"
+                        class="flex items-center gap-3 rounded-xl border border-stone-200 bg-white p-3 shadow-sm transition hover:shadow-md"
+                    >
+                        <div
+                            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-lg"
+                            :class="materiaColor(m.materia.color).chip"
+                        >
+                            {{ TIPO[m.tipo] }}
+                        </div>
+                        <div class="min-w-0">
+                            <div class="truncate text-sm font-medium text-ink">{{ m.titulo }}</div>
+                            <div class="truncate text-xs text-stone-400">
+                                {{ m.materia.nombre }} · por {{ m.uploader }}
+                            </div>
+                        </div>
+                    </Link>
+                </div>
+            </section>
+
+            <!-- Top colaboradores -->
+            <section v-if="topContributors.length" class="mt-12">
+                <h3 class="mb-4 text-sm font-semibold uppercase tracking-wide text-stone-500">
+                    🏆 Top colaboradores
+                </h3>
+                <ol class="space-y-2">
+                    <li
+                        v-for="(c, i) in topContributors"
+                        :key="c.name"
+                        class="flex items-center gap-3 rounded-xl border border-stone-200 bg-white p-3 shadow-sm"
+                    >
+                        <span class="w-5 text-center text-sm font-bold text-stone-400">{{ i + 1 }}</span>
+                        <UserAvatar :name="c.name" :avatar="c.avatar" size="sm" tone="stone" />
+                        <span class="flex-1 font-medium text-ink">{{ c.name }}</span>
+                        <span class="text-sm text-stone-500">
+                            {{ c.count }} {{ c.count === 1 ? 'aporte' : 'aportes' }}
+                        </span>
+                    </li>
+                </ol>
+            </section>
         </div>
     </AuthenticatedLayout>
 </template>

@@ -9,7 +9,7 @@ class Materia extends Model
 {
     protected $table = 'materias';
 
-    protected $fillable = ['nombre', 'anio', 'cuatrimestre', 'color', 'icon'];
+    protected $fillable = ['nombre', 'anio', 'cuatrimestre', 'catedra', 'color', 'icon'];
 
     protected function casts(): array
     {

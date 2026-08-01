@@ -6,9 +6,15 @@ import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
-import { Link } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 
 const showingNavigationDropdown = ref(false);
+
+const searchQuery = ref('');
+const submitSearch = () => {
+    if (searchQuery.value.trim().length < 2) return;
+    router.get(route('search'), { q: searchQuery.value });
+};
 </script>
 
 <template>
@@ -52,6 +58,16 @@ const showingNavigationDropdown = ref(false);
                         </div>
 
                         <div class="hidden sm:ms-6 sm:flex sm:items-center">
+                            <!-- Buscador -->
+                            <form @submit.prevent="submitSearch" class="me-3">
+                                <input
+                                    v-model="searchQuery"
+                                    type="search"
+                                    placeholder="Buscar…"
+                                    class="w-44 rounded-lg border-stone-300 py-1.5 text-sm shadow-sm focus:border-brand-500 focus:ring-brand-500"
+                                />
+                            </form>
+
                             <!-- Settings Dropdown -->
                             <div class="relative ms-3">
                                 <Dropdown align="right" width="48">
@@ -80,17 +96,20 @@ const showingNavigationDropdown = ref(false);
                                     </template>
 
                                     <template #content>
+                                        <DropdownLink :href="route('materiales.mine')">
+                                            Mis apuntes
+                                        </DropdownLink>
                                         <DropdownLink
                                             :href="route('profile.edit')"
                                         >
-                                            Profile
+                                            Perfil
                                         </DropdownLink>
                                         <DropdownLink
                                             :href="route('logout')"
                                             method="post"
                                             as="button"
                                         >
-                                            Log Out
+                                            Cerrar sesión
                                         </DropdownLink>
                                     </template>
                                 </Dropdown>
@@ -156,6 +175,12 @@ const showingNavigationDropdown = ref(false);
                             Inicio
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
+                            :href="route('search')"
+                            :active="route().current('search')"
+                        >
+                            Buscar
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
                             v-if="$page.props.auth.user.role === 'admin'"
                             :href="route('admin.users')"
                             :active="route().current('admin.*')"
@@ -180,15 +205,18 @@ const showingNavigationDropdown = ref(false);
                         </div>
 
                         <div class="mt-3 space-y-1">
+                            <ResponsiveNavLink :href="route('materiales.mine')">
+                                Mis apuntes
+                            </ResponsiveNavLink>
                             <ResponsiveNavLink :href="route('profile.edit')">
-                                Profile
+                                Perfil
                             </ResponsiveNavLink>
                             <ResponsiveNavLink
                                 :href="route('logout')"
                                 method="post"
                                 as="button"
                             >
-                                Log Out
+                                Cerrar sesión
                             </ResponsiveNavLink>
                         </div>
                     </div>

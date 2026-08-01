@@ -1,0 +1,1 @@
+var e=e=>{if(!e)return`0 KB`;let t=e/1024;return t<1024?`${Math.round(t)} KB`:`${(t/1024).toFixed(1)} MB`},t=(e=``,t=``)=>{let n=(t||``).toLowerCase();return e.includes(`pdf`)||n.endsWith(`.pdf`)?`📄`:e.startsWith(`image/`)||/\.(jpg|jpeg|png|gif|webp)$/.test(n)?`🖼️`:/\.(docx?|odt)$/.test(n)?`📝`:/\.(pptx?)$/.test(n)?`📊`:/\.(xlsx?|csv)$/.test(n)?`📈`:`📎`};export{e as n,t};

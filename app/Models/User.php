@@ -51,4 +51,14 @@ class User extends Authenticatable
     {
         return $this->status === 'blocked';
     }
+
+    public function favoriteMaterials(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Material::class, 'material_favorites')->withTimestamps();
+    }
+
+    public function materials(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Material::class);
+    }
 }

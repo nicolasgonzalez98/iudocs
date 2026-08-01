@@ -48,6 +48,7 @@ class MateriaController extends Controller
             'nombre' => ['required', 'string', 'max:255'],
             'anio' => ['nullable', 'integer', 'min:1', 'max:7'],
             'cuatrimestre' => ['nullable', 'integer', 'min:1', 'max:2'],
+            'catedra' => ['nullable', 'string', 'max:255'],
             'color' => ['required', 'string', 'max:20'],
             'icon' => ['nullable', 'string', 'max:16'],
         ]);
