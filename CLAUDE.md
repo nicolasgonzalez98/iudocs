@@ -133,6 +133,29 @@ Stripe, Vercel, shadcn/ui). **Toda la app sigue un mismo Design System**, no pan
 
 ## 9. Repo y portabilidad
 
-- Repo git local (por ahora sin remoto; se conecta más adelante, como DocuMind).
+- Repo GitHub (**público**): `github.com/nicolasgonzalez98/iudocs`.
 - Este `CLAUDE.md` es la **fuente de verdad portable** — la memoria de Claude Code es local y NO viaja.
 - IUDocs vive como subcarpeta del repo "meta" del portfolio (`Proyectos CV`), que lo **ignora** (repo propio).
+
+## 10. Deploy (producción) — 🟢 ONLINE
+
+**URL:** https://iudocs.nicolasngonzalez.com · **Hosting:** Hostinger (shared, PHP 8.4) · **DB:** MySQL (`u689345803_iudocs`).
+
+- El código vive en el server en `~/domains/iudocs.nicolasngonzalez.com/app` (clonado de GitHub).
+- El sitio sirve desde el `public` de Laravel vía **symlink**: `public_html -> app/public`.
+- **Assets compilados versionados** (`public/build` NO está gitignoreado) → el server no necesita Node.
+- `.env` de producción está solo en el server (APP_ENV=production, MySQL, `SESSION_SECURE_COOKIE=true`,
+  mismas credenciales de Google que local + `ADMIN_EMAIL`). El redirect de Google prod está autorizado
+  en Google Cloud: `https://iudocs.nicolasngonzalez.com/auth/google/callback`.
+- Google OAuth en modo **Testing**: solo entran mails agregados como "usuarios de prueba"
+  (o publicar la app; scopes básicos no requieren verificación).
+
+**Actualizar producción** (por SSH, en `~/domains/iudocs.nicolasngonzalez.com/app`):
+```
+git pull
+composer install --no-dev --optimize-autoloader
+php artisan migrate --force
+php artisan config:cache && php artisan route:cache && php artisan view:cache
+```
+> Flujo: buildear local (`npm run build`) → commit (incluye `public/build`) → push → `git pull` en el server.
+> Si cambia el `.env`, correr `php artisan config:clear` (o `config:cache` de nuevo).
