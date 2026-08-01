@@ -37,10 +37,15 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        $adminEmail = config('altillo.admin_email');
+        $isAdmin = $adminEmail && strtolower($request->email) === strtolower($adminEmail);
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => $isAdmin ? 'admin' : 'member',
+            'status' => $isAdmin ? 'active' : 'pending',
         ]);
 
         event(new Registered($user));

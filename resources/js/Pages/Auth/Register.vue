@@ -1,4 +1,5 @@
 <script setup>
+import GoogleButton from '@/Components/GoogleButton.vue';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
@@ -22,11 +23,20 @@ const submit = () => {
 
 <template>
     <GuestLayout>
-        <Head title="Register" />
+        <Head title="Registrarse" />
+
+        <!-- Método principal: Google -->
+        <GoogleButton label="Registrarme con Google" />
+
+        <div class="my-6 flex items-center gap-3">
+            <span class="h-px flex-1 bg-stone-200"></span>
+            <span class="text-xs font-medium uppercase tracking-wide text-stone-400">o con tu email</span>
+            <span class="h-px flex-1 bg-stone-200"></span>
+        </div>
 
         <form @submit.prevent="submit">
             <div>
-                <InputLabel for="name" value="Name" />
+                <InputLabel for="name" value="Nombre" />
 
                 <TextInput
                     id="name"
@@ -57,7 +67,7 @@ const submit = () => {
             </div>
 
             <div class="mt-4">
-                <InputLabel for="password" value="Password" />
+                <InputLabel for="password" value="Contraseña" />
 
                 <TextInput
                     id="password"
@@ -72,10 +82,7 @@ const submit = () => {
             </div>
 
             <div class="mt-4">
-                <InputLabel
-                    for="password_confirmation"
-                    value="Confirm Password"
-                />
+                <InputLabel for="password_confirmation" value="Confirmar contraseña" />
 
                 <TextInput
                     id="password_confirmation"
@@ -86,28 +93,25 @@ const submit = () => {
                     autocomplete="new-password"
                 />
 
-                <InputError
-                    class="mt-2"
-                    :message="form.errors.password_confirmation"
-                />
+                <InputError class="mt-2" :message="form.errors.password_confirmation" />
             </div>
 
-            <div class="mt-4 flex items-center justify-end">
-                <Link
-                    :href="route('login')"
-                    class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                >
-                    Already registered?
-                </Link>
-
+            <div class="mt-6 flex items-center justify-end">
                 <PrimaryButton
-                    class="ms-4"
+                    class="w-full justify-center"
                     :class="{ 'opacity-25': form.processing }"
                     :disabled="form.processing"
                 >
-                    Register
+                    Crear cuenta
                 </PrimaryButton>
             </div>
         </form>
+
+        <p class="mt-6 text-center text-sm text-stone-500">
+            ¿Ya tenés cuenta?
+            <Link :href="route('login')" class="font-semibold text-amber-600 hover:text-amber-700">
+                Iniciá sesión
+            </Link>
+        </p>
     </GuestLayout>
 </template>

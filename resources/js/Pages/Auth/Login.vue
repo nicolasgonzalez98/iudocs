@@ -1,5 +1,6 @@
 <script setup>
 import Checkbox from '@/Components/Checkbox.vue';
+import GoogleButton from '@/Components/GoogleButton.vue';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
@@ -31,10 +32,21 @@ const submit = () => {
 
 <template>
     <GuestLayout>
-        <Head title="Log in" />
+        <Head title="Iniciar sesión" />
 
         <div v-if="status" class="mb-4 text-sm font-medium text-green-600">
             {{ status }}
+        </div>
+
+        <InputError class="mb-4" :message="form.errors.email" v-if="form.errors.email" />
+
+        <!-- Método principal: Google -->
+        <GoogleButton />
+
+        <div class="my-6 flex items-center gap-3">
+            <span class="h-px flex-1 bg-stone-200"></span>
+            <span class="text-xs font-medium uppercase tracking-wide text-stone-400">o con tu email</span>
+            <span class="h-px flex-1 bg-stone-200"></span>
         </div>
 
         <form @submit.prevent="submit">
@@ -50,12 +62,10 @@ const submit = () => {
                     autofocus
                     autocomplete="username"
                 />
-
-                <InputError class="mt-2" :message="form.errors.email" />
             </div>
 
             <div class="mt-4">
-                <InputLabel for="password" value="Password" />
+                <InputLabel for="password" value="Contraseña" />
 
                 <TextInput
                     id="password"
@@ -72,29 +82,34 @@ const submit = () => {
             <div class="mt-4 block">
                 <label class="flex items-center">
                     <Checkbox name="remember" v-model:checked="form.remember" />
-                    <span class="ms-2 text-sm text-gray-600"
-                        >Remember me</span
-                    >
+                    <span class="ms-2 text-sm text-stone-600">Recordarme</span>
                 </label>
             </div>
 
-            <div class="mt-4 flex items-center justify-end">
+            <div class="mt-6 flex items-center justify-between">
                 <Link
                     v-if="canResetPassword"
                     :href="route('password.request')"
-                    class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    class="rounded-md text-sm text-stone-500 underline-offset-4 hover:text-amber-600 hover:underline focus:outline-none"
                 >
-                    Forgot your password?
+                    ¿Olvidaste tu contraseña?
                 </Link>
+                <span v-else></span>
 
                 <PrimaryButton
-                    class="ms-4"
                     :class="{ 'opacity-25': form.processing }"
                     :disabled="form.processing"
                 >
-                    Log in
+                    Iniciar sesión
                 </PrimaryButton>
             </div>
         </form>
+
+        <p class="mt-6 text-center text-sm text-stone-500">
+            ¿No tenés cuenta?
+            <Link :href="route('register')" class="font-semibold text-amber-600 hover:text-amber-700">
+                Registrate
+            </Link>
+        </p>
     </GuestLayout>
 </template>

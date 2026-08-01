@@ -13,7 +13,12 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['Inter', ...defaultTheme.fontFamily.sans],
+            },
+            colors: {
+                // Tokens de marca Altillo (light-first, ámbar cálido)
+                cream: '#FEFCF8', // fondo base
+                ink: '#241C12', // texto principal
             },
         },
     },
