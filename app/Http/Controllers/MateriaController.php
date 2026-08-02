@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Carrera;
 use App\Models\Material;
 use App\Models\Materia;
 use App\Models\Subcarpeta;
@@ -48,10 +49,21 @@ class MateriaController extends Controller
             ]);
 
         return Inertia::render('Materias/Index', [
-            'materias' => Materia::orderBy('anio')
+            'materias' => Materia::with('carreras:id')
+                ->orderBy('anio')
                 ->orderBy('cuatrimestre')
                 ->orderBy('nombre')
-                ->get(),
+                ->get()
+                ->map(fn (Materia $m) => [
+                    'id' => $m->id,
+                    'nombre' => $m->nombre,
+                    'anio' => $m->anio,
+                    'cuatrimestre' => $m->cuatrimestre,
+                    'color' => $m->color,
+                    'icon' => $m->icon,
+                    'carrera_ids' => $m->carreras->pluck('id'),
+                ]),
+            'carreras' => Carrera::orderBy('nombre')->get(['id', 'nombre']),
             'recent' => $recent,
             'topContributors' => $topContributors,
         ]);

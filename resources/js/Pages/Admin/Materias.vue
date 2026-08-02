@@ -17,6 +17,7 @@ const { confirm } = useConfirm();
 
 defineProps({
     materias: { type: Array, default: () => [] },
+    carreras: { type: Array, default: () => [] },
 });
 
 const EMOJIS = ['🧪', '🔬', '🧬', '⚗️', '💊', '🩺', '🌱', '🧫', '📐', '📊', '🧠', '📚'];
@@ -32,6 +33,7 @@ const form = useForm({
     catedra: '',
     color: 'amber',
     icon: '',
+    carrera_ids: [],
 });
 
 // Reset explícito (garantiza id=null → crea, no edita)
@@ -44,6 +46,7 @@ const resetForm = () => {
     form.catedra = '';
     form.color = 'amber';
     form.icon = '';
+    form.carrera_ids = [];
 };
 
 const openCreate = () => {
@@ -60,6 +63,7 @@ const openEdit = (m) => {
     form.catedra = m.catedra ?? '';
     form.color = m.color ?? 'amber';
     form.icon = m.icon ?? '';
+    form.carrera_ids = [...(m.carrera_ids ?? [])];
     showModal.value = true;
 };
 
@@ -185,6 +189,31 @@ const destroy = async (m) => {
                         autofocus
                     />
                     <InputError class="mt-2" :message="form.errors.nombre" />
+                </div>
+
+                <div class="mt-4">
+                    <InputLabel value="Carreras" />
+                    <p class="mt-0.5 text-xs text-stone-400">Elegí al menos una.</p>
+                    <div v-if="carreras.length" class="mt-2 flex flex-wrap gap-2">
+                        <label
+                            v-for="c in carreras"
+                            :key="c.id"
+                            class="inline-flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-medium transition"
+                            :class="form.carrera_ids.includes(c.id) ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-stone-300 text-stone-600 hover:bg-stone-50'"
+                        >
+                            <input
+                                type="checkbox"
+                                :value="c.id"
+                                v-model="form.carrera_ids"
+                                class="rounded border-stone-300 text-brand-600 focus:ring-brand-500"
+                            />
+                            {{ c.nombre }}
+                        </label>
+                    </div>
+                    <p v-else class="mt-2 text-sm text-stone-400">
+                        No hay carreras creadas. Creá una en la pestaña “Carreras” primero.
+                    </p>
+                    <InputError class="mt-2" :message="form.errors.carrera_ids" />
                 </div>
 
                 <div class="mt-4 grid grid-cols-2 gap-4">

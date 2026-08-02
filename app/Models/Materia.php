@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Materia extends Model
@@ -36,5 +37,10 @@ class Materia extends Model
     public function subcarpetas(): HasMany
     {
         return $this->hasMany(Subcarpeta::class);
+    }
+
+    public function carreras(): BelongsToMany
+    {
+        return $this->belongsToMany(Carrera::class, 'carrera_materia');
     }
 }

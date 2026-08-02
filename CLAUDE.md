@@ -67,6 +67,7 @@ subida de archivos, roles/moderación y features sociales.
 | **Materia** | nombre, descripción, (año/cuatrimestre opcional) |
 | **Material** | materia_id, user_id, **tipo** (`apunte`/`examen`), título, archivo (path), mime, tamaño |
 | **Comment** | material_id, user_id, texto |
+| **Carrera** | nombre · **N-a-N con Materia** (pivote `carrera_materia`). Al crear una materia es **obligatorio** asignarle ≥1 carrera. El home del alumno filtra por carrera con tabs. |
 
 **Permisos:**
 - Ver/usar el contenido → **todos menos los bloqueados**. Los `pending` **navegan libremente** (se sacó el gating de aprobación), pero **siguen apareciendo en "Solicitudes pendientes"** para que la admin apruebe/rechace cuando quiera. Solo los `blocked` ven la pantalla de bloqueo.

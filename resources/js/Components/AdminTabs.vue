@@ -23,5 +23,12 @@ const tabClass = (active) =>
         >
             Materias
         </Link>
+        <Link
+            :href="route('admin.carreras')"
+            class="border-b-2 px-1 pb-3 text-sm font-medium transition"
+            :class="tabClass(route().current('admin.carreras'))"
+        >
+            Carreras
+        </Link>
     </nav>
 </template>

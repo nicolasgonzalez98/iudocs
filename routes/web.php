@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\CarreraController as AdminCarreraController;
 use App\Http\Controllers\Admin\MateriaController as AdminMateriaController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\CommentController;
@@ -90,6 +91,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/materias', [AdminMateriaController::class, 'store'])->name('materias.store');
     Route::patch('/materias/{materia}', [AdminMateriaController::class, 'update'])->name('materias.update');
     Route::delete('/materias/{materia}', [AdminMateriaController::class, 'destroy'])->name('materias.destroy');
+
+    Route::get('/carreras', [AdminCarreraController::class, 'index'])->name('carreras');
+    Route::post('/carreras', [AdminCarreraController::class, 'store'])->name('carreras.store');
+    Route::patch('/carreras/{carrera}', [AdminCarreraController::class, 'update'])->name('carreras.update');
+    Route::delete('/carreras/{carrera}', [AdminCarreraController::class, 'destroy'])->name('carreras.destroy');
 });
 
 require __DIR__.'/auth.php';
