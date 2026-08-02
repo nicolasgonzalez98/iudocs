@@ -1,11 +1,12 @@
 <script setup>
+import Tooltip from '@/Components/Tooltip.vue';
 import { fileIcon, formatBytes } from '@/files';
 
 defineProps({
     material: { type: Object, required: true },
 });
 
-defineEmits(['delete', 'comments', 'vote', 'favorite']);
+defineEmits(['delete', 'edit', 'comments', 'vote', 'favorite']);
 </script>
 
 <template>
@@ -46,29 +47,42 @@ defineEmits(['delete', 'comments', 'vote', 'favorite']);
         </div>
 
         <div class="flex shrink-0 items-center gap-1">
-            <button
-                type="button"
-                @click="$emit('favorite', material)"
-                :title="material.is_favorite ? 'Quitar de guardados' : 'Guardar'"
-                class="rounded-lg px-2 py-1.5 text-lg leading-none transition hover:bg-stone-100"
-            >
-                {{ material.is_favorite ? '⭐' : '☆' }}
-            </button>
+            <Tooltip :text="material.is_favorite ? 'Quitar de guardados' : 'Guardar'">
+                <button
+                    type="button"
+                    @click="$emit('favorite', material)"
+                    aria-label="Guardar"
+                    class="rounded-lg px-2 py-1.5 text-lg leading-none transition hover:bg-stone-100"
+                >
+                    {{ material.is_favorite ? '⭐' : '☆' }}
+                </button>
+            </Tooltip>
             <a
                 :href="route('materiales.download', material.id)"
                 class="rounded-lg px-3 py-1.5 text-sm font-semibold text-brand-600 transition hover:bg-brand-50"
             >
                 Descargar
             </a>
-            <button
-                v-if="material.can_delete"
-                type="button"
-                @click="$emit('delete', material)"
-                class="rounded-lg px-2 py-1.5 text-sm font-medium text-stone-400 transition hover:bg-red-50 hover:text-red-600"
-                title="Borrar"
-            >
-                ✕
-            </button>
+            <Tooltip v-if="material.can_delete" text="Editar">
+                <button
+                    type="button"
+                    @click="$emit('edit', material)"
+                    aria-label="Editar"
+                    class="rounded-lg px-2 py-1.5 text-sm text-stone-400 transition hover:bg-brand-50 hover:text-brand-600"
+                >
+                    ✏️
+                </button>
+            </Tooltip>
+            <Tooltip v-if="material.can_delete" text="Borrar">
+                <button
+                    type="button"
+                    @click="$emit('delete', material)"
+                    aria-label="Borrar"
+                    class="rounded-lg px-2 py-1.5 text-sm font-medium text-stone-400 transition hover:bg-red-50 hover:text-red-600"
+                >
+                    ✕
+                </button>
+            </Tooltip>
         </div>
     </div>
 </template>

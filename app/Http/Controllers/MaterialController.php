@@ -47,6 +47,27 @@ class MaterialController extends Controller
     }
 
     /**
+     * Editar título / descripción de un material: solo el dueño o un admin.
+     */
+    public function update(Request $request, Material $material): RedirectResponse
+    {
+        $user = $request->user();
+
+        if (! $user->isAdmin() && $material->user_id !== $user->id) {
+            abort(403);
+        }
+
+        $data = $request->validate([
+            'titulo' => ['required', 'string', 'max:255'],
+            'descripcion' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $material->update($data);
+
+        return back();
+    }
+
+    /**
      * Descargar un material (archivo privado servido con permisos).
      */
     public function download(Material $material): StreamedResponse

@@ -33,6 +33,7 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::post('/materiales/{material}/voto', [MaterialController::class, 'toggleVote'])->name('materiales.vote');
     Route::post('/materiales/{material}/favorito', [MaterialController::class, 'toggleFavorite'])->name('materiales.favorite');
     Route::get('/mis-apuntes', [MaterialController::class, 'mine'])->name('materiales.mine');
+    Route::patch('/materiales/{material}', [MaterialController::class, 'update'])->name('materiales.update');
     Route::delete('/materiales/{material}', [MaterialController::class, 'destroy'])->name('materiales.destroy');
 
     // Comentarios

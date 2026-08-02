@@ -102,6 +102,33 @@ const destroy = async (material) => {
     });
     if (ok) router.delete(route('materiales.destroy', material.id), { preserveScroll: true });
 };
+
+// Edición de título / descripción
+const showEditModal = ref(false);
+const editForm = useForm({
+    id: null,
+    titulo: '',
+    descripcion: '',
+});
+
+const openEdit = (material) => {
+    editForm.clearErrors();
+    editForm.id = material.id;
+    editForm.titulo = material.titulo;
+    editForm.descripcion = material.descripcion ?? '';
+    showEditModal.value = true;
+};
+
+const closeEdit = () => {
+    showEditModal.value = false;
+};
+
+const submitEdit = () => {
+    editForm.patch(route('materiales.update', editForm.id), {
+        preserveScroll: true,
+        onSuccess: () => closeEdit(),
+    });
+};
 </script>
 
 <template>
@@ -180,6 +207,7 @@ const destroy = async (material) => {
                         :key="m.id"
                         :material="m"
                         @delete="destroy"
+                        @edit="openEdit"
                         @comments="openMaterialId = $event.id"
                         @vote="vote"
                         @favorite="favorite"
@@ -211,6 +239,7 @@ const destroy = async (material) => {
                         :key="m.id"
                         :material="m"
                         @delete="destroy"
+                        @edit="openEdit"
                         @comments="openMaterialId = $event.id"
                         @vote="vote"
                         @favorite="favorite"
@@ -242,6 +271,7 @@ const destroy = async (material) => {
                         :key="m.id"
                         :material="m"
                         @delete="destroy"
+                        @edit="openEdit"
                         @comments="openMaterialId = $event.id"
                         @vote="vote"
                         @favorite="favorite"
@@ -364,6 +394,46 @@ const destroy = async (material) => {
                     <PrimaryButton :disabled="form.processing" :class="{ 'opacity-75': form.processing }">
                         <Spinner v-if="form.processing" class="-ms-1 me-2" />
                         Subir
+                    </PrimaryButton>
+                </div>
+            </form>
+        </Modal>
+
+        <!-- Modal de edición (título / descripción) -->
+        <Modal :show="showEditModal" @close="closeEdit">
+            <form @submit.prevent="submitEdit" class="p-6">
+                <h2 class="text-lg font-semibold text-ink">Editar material</h2>
+
+                <div class="mt-5">
+                    <InputLabel for="edit-titulo" value="Título" />
+                    <TextInput
+                        id="edit-titulo"
+                        v-model="editForm.titulo"
+                        type="text"
+                        class="mt-1 block w-full"
+                        required
+                        autofocus
+                    />
+                    <InputError class="mt-2" :message="editForm.errors.titulo" />
+                </div>
+
+                <div class="mt-4">
+                    <InputLabel for="edit-descripcion" value="Descripción (opcional)" />
+                    <textarea
+                        id="edit-descripcion"
+                        v-model="editForm.descripcion"
+                        rows="2"
+                        class="mt-1 block w-full rounded-lg border-stone-300 shadow-sm focus:border-brand-500 focus:ring-brand-500"
+                        placeholder="Ej: Le falta la última hoja"
+                    ></textarea>
+                    <InputError class="mt-2" :message="editForm.errors.descripcion" />
+                </div>
+
+                <div class="mt-6 flex justify-end gap-3">
+                    <SecondaryButton type="button" @click="closeEdit">Cancelar</SecondaryButton>
+                    <PrimaryButton :disabled="editForm.processing" :class="{ 'opacity-75': editForm.processing }">
+                        <Spinner v-if="editForm.processing" class="-ms-1 me-2" />
+                        Guardar cambios
                     </PrimaryButton>
                 </div>
             </form>
