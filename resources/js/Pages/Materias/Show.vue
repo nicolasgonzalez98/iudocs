@@ -262,35 +262,66 @@ const deleteFolder = async (folder) => {
     if (ok) router.delete(route('subcarpetas.destroy', folder.id), { preserveScroll: true });
 };
 
-// Mover un material a una carpeta / sacarlo (dueño o admin)
+// Mover material(es) a una carpeta / sacarlos (dueño o admin)
 const showMoveModal = ref(false);
-const moveMaterial = ref(null);
-const moveForm = useForm({ subcarpeta_id: null });
-const moveFolders = computed(() => {
-    if (!moveMaterial.value) return [];
-    const t = moveMaterial.value.tipo;
-    return t === 'apunte' ? props.subApuntes : t === 'campus' ? props.subCampus : props.subExamenes;
+const moveCtx = ref(null); // { multi, ids, tipo, currentId, label }
+const moveForm = useForm({ material_ids: [], subcarpeta_id: null });
+
+const foldersByTipo = (t) =>
+    t === 'apunte' ? props.subApuntes : t === 'campus' ? props.subCampus : props.subExamenes;
+const moveFolders = computed(() => (moveCtx.value ? foldersByTipo(moveCtx.value.tipo) : []));
+const moveChanged = computed(() => {
+    if (!moveCtx.value) return false;
+    return moveCtx.value.multi
+        ? moveCtx.value.ids.length > 0
+        : moveForm.subcarpeta_id !== moveCtx.value.currentId;
 });
-const moveCurrentId = computed(() => moveMaterial.value?.subcarpeta_id ?? null);
-const moveChanged = computed(() => moveForm.subcarpeta_id !== moveCurrentId.value);
 
 const openMove = (material) => {
     moveForm.clearErrors();
-    moveMaterial.value = material;
+    moveCtx.value = {
+        multi: false,
+        ids: [material.id],
+        tipo: material.tipo,
+        currentId: material.subcarpeta_id ?? null,
+        label: material.titulo,
+    };
     moveForm.subcarpeta_id = material.subcarpeta_id ?? null; // arranca en la ubicación actual
+    showMoveModal.value = true;
+};
+const openMoveMany = ({ tipo, ids }) => {
+    moveForm.clearErrors();
+    moveCtx.value = {
+        multi: true,
+        ids,
+        tipo,
+        currentId: null,
+        label: `${ids.length} archivo${ids.length === 1 ? '' : 's'} seleccionado${ids.length === 1 ? '' : 's'}`,
+    };
+    moveForm.subcarpeta_id = null;
     showMoveModal.value = true;
 };
 const closeMove = () => {
     showMoveModal.value = false;
-    moveMaterial.value = null;
+    moveCtx.value = null;
 };
 const submitMove = () => {
-    if (!moveMaterial.value || !moveChanged.value) return;
-    moveForm.patch(route('materiales.move', moveMaterial.value.id), {
+    if (!moveCtx.value || !moveChanged.value) return;
+    moveForm.material_ids = moveCtx.value.ids;
+    moveForm.patch(route('materiales.move-batch', props.materia.id), {
         preserveScroll: true,
         preserveState: true,
         onSuccess: () => closeMove(),
     });
+};
+
+// Reordenar carpetas (admin)
+const reorderFolders = ({ tipo, ids }) => {
+    router.patch(
+        route('subcarpetas.reorder', props.materia.id),
+        { tipo, ids },
+        { preserveScroll: true, preserveState: true },
+    );
 };
 </script>
 
@@ -361,6 +392,8 @@ const submitMove = () => {
                 @delete="destroy"
                 @edit="openEdit"
                 @move="openMove"
+                @move-many="openMoveMany"
+                @reorder-folders="reorderFolders"
                 @comments="openMaterialId = $event.id"
                 @vote="vote"
                 @favorite="favorite"
@@ -381,6 +414,8 @@ const submitMove = () => {
                 @delete="destroy"
                 @edit="openEdit"
                 @move="openMove"
+                @move-many="openMoveMany"
+                @reorder-folders="reorderFolders"
                 @comments="openMaterialId = $event.id"
                 @vote="vote"
                 @favorite="favorite"
@@ -401,6 +436,8 @@ const submitMove = () => {
                 @delete="destroy"
                 @edit="openEdit"
                 @move="openMove"
+                @move-many="openMoveMany"
+                @reorder-folders="reorderFolders"
                 @comments="openMaterialId = $event.id"
                 @vote="vote"
                 @favorite="favorite"
@@ -710,11 +747,11 @@ const submitMove = () => {
             </form>
         </Modal>
 
-        <!-- Modal mover a carpeta -->
+        <!-- Modal mover a carpeta (uno o varios) -->
         <Modal :show="showMoveModal" @close="closeMove">
-            <div v-if="moveMaterial" class="p-6">
+            <div v-if="moveCtx" class="p-6">
                 <h2 class="text-lg font-semibold text-ink">Mover a carpeta</h2>
-                <p class="mt-1 truncate text-sm text-stone-500">{{ moveMaterial.titulo }}</p>
+                <p class="mt-1 truncate text-sm text-stone-500">{{ moveCtx.label }}</p>
 
                 <div class="mt-5 space-y-1">
                     <button
@@ -726,7 +763,7 @@ const submitMove = () => {
                         <span>📄 Otros archivos (sin carpeta)</span>
                         <span class="shrink-0 text-xs">
                             <span v-if="moveForm.subcarpeta_id === null" class="font-semibold text-brand-600">✓</span>
-                            <span v-else-if="moveCurrentId === null" class="text-stone-400">Actual</span>
+                            <span v-else-if="!moveCtx.multi && moveCtx.currentId === null" class="text-stone-400">Actual</span>
                         </span>
                     </button>
 
@@ -741,7 +778,7 @@ const submitMove = () => {
                         <span class="min-w-0 truncate">📁 {{ f.nombre }}</span>
                         <span class="shrink-0 text-xs">
                             <span v-if="moveForm.subcarpeta_id === f.id" class="font-semibold text-brand-600">✓</span>
-                            <span v-else-if="moveCurrentId === f.id" class="text-stone-400">Actual</span>
+                            <span v-else-if="!moveCtx.multi && moveCtx.currentId === f.id" class="text-stone-400">Actual</span>
                         </span>
                     </button>
                 </div>

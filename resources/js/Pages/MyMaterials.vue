@@ -47,7 +47,7 @@ const TIPO = { apunte: 'Apunte', campus: 'Campus', examen: 'Examen' };
                                     >
                                         {{ m.materia.icon || '📘' }} {{ m.materia.nombre }}
                                     </span>
-                                    <span>· {{ TIPO[m.tipo] }} · ⬇ {{ m.downloads }}</span>
+                                    <span>· {{ TIPO[m.tipo] }}<template v-if="m.carpeta"> · 📁 {{ m.carpeta }}</template> · ⬇ {{ m.downloads }}</span>
                                 </div>
                             </div>
                         </Link>
@@ -81,7 +81,7 @@ const TIPO = { apunte: 'Apunte', campus: 'Campus', examen: 'Examen' };
                                     >
                                         {{ m.materia.icon || '📘' }} {{ m.materia.nombre }}
                                     </span>
-                                    <span>· {{ TIPO[m.tipo] }} · ⬇ {{ m.downloads }}</span>
+                                    <span>· {{ TIPO[m.tipo] }}<template v-if="m.carpeta"> · 📁 {{ m.carpeta }}</template> · ⬇ {{ m.downloads }}</span>
                                 </div>
                             </div>
                         </Link>

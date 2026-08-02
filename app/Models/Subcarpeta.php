@@ -10,7 +10,7 @@ class Subcarpeta extends Model
 {
     protected $table = 'subcarpetas';
 
-    protected $fillable = ['materia_id', 'user_id', 'tipo', 'nombre'];
+    protected $fillable = ['materia_id', 'user_id', 'tipo', 'nombre', 'posicion'];
 
     public function materia(): BelongsTo
     {

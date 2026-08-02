@@ -105,6 +105,7 @@ class MateriaController extends Controller
         ];
 
         $subcarpetas = $materia->subcarpetas()
+            ->orderBy('posicion')
             ->orderBy('nombre')
             ->get(['id', 'tipo', 'nombre'])
             ->map(fn (Subcarpeta $s) => [

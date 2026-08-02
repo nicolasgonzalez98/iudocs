@@ -12,14 +12,16 @@ const props = defineProps({
     isAdmin: { type: Boolean, default: false },
 });
 
-defineEmits([
+const emit = defineEmits([
     'upload',
     'new-folder',
     'rename-folder',
     'delete-folder',
+    'reorder-folders',
     'delete',
     'edit',
     'move',
+    'move-many',
     'comments',
     'vote',
     'favorite',
@@ -40,10 +42,43 @@ const folders = computed(() =>
 );
 const loose = computed(() => sortList(props.materials.filter((m) => !m.subcarpeta_id)));
 
-// Estado de expandido por carpeta (abiertas por defecto)
-const collapsed = ref({});
-const toggle = (id) => (collapsed.value[id] = !collapsed.value[id]);
-const isOpen = (id) => !collapsed.value[id];
+// A — carpetas colapsadas por defecto
+const expanded = ref({});
+const isOpen = (id) => !!expanded.value[id];
+const toggle = (id) => (expanded.value[id] = !expanded.value[id]);
+
+// D — reordenar carpetas (admin) con flechas
+const moveFolder = (index, dir) => {
+    const ids = folders.value.map((f) => f.id);
+    const target = index + dir;
+    if (target < 0 || target >= ids.length) return;
+    [ids[index], ids[target]] = [ids[target], ids[index]];
+    emit('reorder-folders', { tipo: props.tipo, ids });
+};
+
+// B — selección múltiple para mover en lote
+const selectMode = ref(false);
+const selected = ref(new Set());
+const isSelected = (m) => selected.value.has(m.id);
+const toggleSelect = (m) => {
+    const s = new Set(selected.value);
+    s.has(m.id) ? s.delete(m.id) : s.add(m.id);
+    selected.value = s;
+};
+const startSelect = () => {
+    selectMode.value = true;
+    selected.value = new Set();
+};
+const cancelSelect = () => {
+    selectMode.value = false;
+    selected.value = new Set();
+};
+const moveSelected = () => {
+    if (!selected.value.size) return;
+    emit('move-many', { tipo: props.tipo, ids: [...selected.value] });
+    cancelSelect();
+};
+const movableCount = computed(() => props.materials.filter((m) => m.can_delete).length);
 </script>
 
 <template>
@@ -62,11 +97,46 @@ const isOpen = (id) => !collapsed.value[id];
                     📁 Nueva carpeta
                 </button>
                 <button
+                    v-if="movableCount && !selectMode"
+                    type="button"
+                    @click="startSelect"
+                    class="text-sm font-medium text-stone-500 hover:text-brand-700"
+                >
+                    ☑️ Seleccionar
+                </button>
+                <button
                     type="button"
                     @click="$emit('upload', tipo)"
                     class="text-sm font-medium text-brand-600 hover:text-brand-700"
                 >
                     {{ addLabel }}
+                </button>
+            </div>
+        </div>
+
+        <!-- B — barra de acciones de selección -->
+        <div
+            v-if="selectMode"
+            class="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-brand-200 bg-brand-50 px-3 py-2"
+        >
+            <span class="text-sm font-medium text-brand-800">
+                {{ selected.size }} seleccionado{{ selected.size === 1 ? '' : 's' }}
+            </span>
+            <div class="flex items-center gap-2">
+                <button
+                    type="button"
+                    @click="cancelSelect"
+                    class="rounded-lg px-3 py-1.5 text-sm font-medium text-stone-500 transition hover:bg-white/70"
+                >
+                    Cancelar
+                </button>
+                <button
+                    type="button"
+                    :disabled="selected.size === 0"
+                    @click="moveSelected"
+                    class="rounded-lg bg-brand-500 px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:opacity-50"
+                >
+                    Mover seleccionados
                 </button>
             </div>
         </div>
@@ -82,11 +152,11 @@ const isOpen = (id) => !collapsed.value[id];
         <div v-else class="space-y-3">
             <!-- Carpetas (acordeón) -->
             <div
-                v-for="f in folders"
+                v-for="(f, index) in folders"
                 :key="f.id"
                 class="overflow-hidden rounded-xl border border-stone-200 bg-stone-50/60"
             >
-                <div class="flex items-center gap-2 px-3 py-2.5">
+                <div class="flex items-center gap-1 px-3 py-2.5">
                     <button
                         type="button"
                         @click="toggle(f.id)"
@@ -98,6 +168,24 @@ const isOpen = (id) => !collapsed.value[id];
                         <span class="shrink-0 text-xs text-stone-400">({{ f.items.length }})</span>
                     </button>
                     <template v-if="isAdmin">
+                        <button
+                            type="button"
+                            :disabled="index === 0"
+                            @click="moveFolder(index, -1)"
+                            aria-label="Subir carpeta"
+                            class="rounded-lg px-1.5 py-1 text-stone-400 transition hover:bg-stone-200/60 hover:text-stone-700 disabled:opacity-30 disabled:hover:bg-transparent"
+                        >
+                            ↑
+                        </button>
+                        <button
+                            type="button"
+                            :disabled="index === folders.length - 1"
+                            @click="moveFolder(index, 1)"
+                            aria-label="Bajar carpeta"
+                            class="rounded-lg px-1.5 py-1 text-stone-400 transition hover:bg-stone-200/60 hover:text-stone-700 disabled:opacity-30 disabled:hover:bg-transparent"
+                        >
+                            ↓
+                        </button>
                         <button
                             type="button"
                             @click="$emit('rename-folder', f)"
@@ -126,6 +214,9 @@ const isOpen = (id) => !collapsed.value[id];
                         v-for="m in f.items"
                         :key="m.id"
                         :material="m"
+                        :selectable="selectMode && m.can_delete"
+                        :selected="isSelected(m)"
+                        @toggle-select="toggleSelect"
                         @delete="$emit('delete', $event)"
                         @edit="$emit('edit', $event)"
                         @move="$emit('move', $event)"
@@ -147,6 +238,9 @@ const isOpen = (id) => !collapsed.value[id];
                 v-for="m in loose"
                 :key="m.id"
                 :material="m"
+                :selectable="selectMode && m.can_delete"
+                :selected="isSelected(m)"
+                @toggle-select="toggleSelect"
                 @delete="$emit('delete', $event)"
                 @edit="$emit('edit', $event)"
                 @move="$emit('move', $event)"

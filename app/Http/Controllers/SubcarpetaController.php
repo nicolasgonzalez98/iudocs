@@ -26,10 +26,14 @@ class SubcarpetaController extends Controller
         ]);
 
         DB::transaction(function () use ($request, $materia, $data) {
+            // Nueva carpeta va al final del orden de su tipo.
+            $posicion = ($materia->subcarpetas()->where('tipo', $data['tipo'])->max('posicion') ?? -1) + 1;
+
             $subcarpeta = $materia->subcarpetas()->create([
                 'user_id' => $request->user()->id,
                 'tipo' => $data['tipo'],
                 'nombre' => $data['nombre'],
+                'posicion' => $posicion,
             ]);
 
             if (! empty($data['material_ids'])) {
@@ -43,6 +47,33 @@ class SubcarpetaController extends Controller
                     if ($request->user()->can('move', $material)) {
                         $material->update(['subcarpeta_id' => $subcarpeta->id]);
                     }
+                }
+            }
+        });
+
+        return back();
+    }
+
+    /**
+     * Reordenar las carpetas de un tipo (solo admin). Recibe la lista de ids
+     * en el orden nuevo y persiste la posición por índice.
+     */
+    public function reorder(Request $request, Materia $materia): RedirectResponse
+    {
+        abort_unless($request->user()->can('create', Subcarpeta::class), 403);
+
+        $data = $request->validate([
+            'tipo' => ['required', 'in:apunte,campus,examen'],
+            'ids' => ['required', 'array'],
+            'ids.*' => ['integer'],
+        ]);
+
+        $folders = $materia->subcarpetas()->where('tipo', $data['tipo'])->get()->keyBy('id');
+
+        DB::transaction(function () use ($data, $folders) {
+            foreach ($data['ids'] as $index => $id) {
+                if ($folders->has($id)) {
+                    $folders[$id]->update(['posicion' => $index]);
                 }
             }
         });

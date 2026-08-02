@@ -25,7 +25,7 @@ class SearchController extends Controller
                 ->limit(20)
                 ->get(['id', 'nombre', 'anio', 'cuatrimestre', 'color', 'icon']);
 
-            $materiales = Material::with(['materia:id,nombre,color,icon', 'user:id,name'])
+            $materiales = Material::with(['materia:id,nombre,color,icon', 'user:id,name', 'subcarpeta:id,nombre'])
                 ->where(function ($w) use ($like) {
                     $w->where('titulo', 'like', $like)
                         ->orWhere('descripcion', 'like', $like);
@@ -39,6 +39,7 @@ class SearchController extends Controller
                     'titulo' => $m->titulo,
                     'descripcion' => $m->descripcion,
                     'uploader' => $m->user->name,
+                    'carpeta' => $m->subcarpeta?->nombre,
                     'materia' => [
                         'id' => $m->materia->id,
                         'nombre' => $m->materia->nombre,

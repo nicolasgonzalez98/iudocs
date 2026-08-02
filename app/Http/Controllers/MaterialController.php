@@ -111,6 +111,43 @@ class MaterialController extends Controller
     }
 
     /**
+     * Mover varios materiales a la vez a una carpeta (o sacarlos).
+     * Solo mueve los que el usuario puede mover; la carpeta destino debe
+     * coincidir en materia y tipo con cada material (si no, se saltea).
+     */
+    public function moveBatch(Request $request, Materia $materia): RedirectResponse
+    {
+        $data = $request->validate([
+            'material_ids' => ['required', 'array', 'min:1'],
+            'material_ids.*' => ['integer'],
+            'subcarpeta_id' => ['nullable', 'integer'],
+        ]);
+
+        $materials = $materia->materials()->whereIn('id', $data['material_ids'])->get();
+
+        DB::transaction(function () use ($request, $materia, $data, $materials) {
+            foreach ($materials as $material) {
+                if (! $request->user()->can('move', $material)) {
+                    continue;
+                }
+
+                $subId = null;
+                if (! empty($data['subcarpeta_id'])) {
+                    $sub = $materia->subcarpetas()->where('tipo', $material->tipo)->find($data['subcarpeta_id']);
+                    if (! $sub) {
+                        continue;
+                    }
+                    $subId = $sub->id;
+                }
+
+                $material->update(['subcarpeta_id' => $subId]);
+            }
+        });
+
+        return back();
+    }
+
+    /**
      * Descargar un material (archivo privado servido con permisos).
      */
     public function download(Material $material): StreamedResponse
@@ -162,16 +199,17 @@ class MaterialController extends Controller
                 'color' => $m->materia->color,
                 'icon' => $m->materia->icon,
             ],
+            'carpeta' => $m->subcarpeta?->nombre,
         ];
 
-        $uploads = Material::with('materia:id,nombre,color,icon')
+        $uploads = Material::with(['materia:id,nombre,color,icon', 'subcarpeta:id,nombre'])
             ->where('user_id', $user->id)
             ->latest()
             ->get()
             ->map($map);
 
         $favorites = $user->favoriteMaterials()
-            ->with('materia:id,nombre,color,icon')
+            ->with(['materia:id,nombre,color,icon', 'subcarpeta:id,nombre'])
             ->orderByDesc('material_favorites.created_at')
             ->get()
             ->map($map);

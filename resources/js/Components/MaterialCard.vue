@@ -4,13 +4,26 @@ import { fileIcon, formatBytes } from '@/files';
 
 defineProps({
     material: { type: Object, required: true },
+    selectable: { type: Boolean, default: false },
+    selected: { type: Boolean, default: false },
 });
 
-defineEmits(['delete', 'edit', 'move', 'comments', 'vote', 'favorite']);
+defineEmits(['delete', 'edit', 'move', 'toggle-select', 'comments', 'vote', 'favorite']);
 </script>
 
 <template>
-    <div class="flex items-start gap-3 rounded-xl border border-stone-200 bg-white p-4 shadow-sm transition hover:shadow-md">
+    <div
+        class="flex items-start gap-3 rounded-xl border bg-white p-4 shadow-sm transition hover:shadow-md"
+        :class="selectable && selected ? 'border-brand-400 ring-1 ring-brand-300' : 'border-stone-200'"
+    >
+        <input
+            v-if="selectable"
+            type="checkbox"
+            :checked="selected"
+            @change="$emit('toggle-select', material)"
+            aria-label="Seleccionar material"
+            class="mt-1 h-4 w-4 shrink-0 rounded border-stone-300 text-brand-600 focus:ring-brand-500"
+        />
         <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-stone-100 text-xl">
             {{ fileIcon(material.mime, material.original_name) }}
         </div>

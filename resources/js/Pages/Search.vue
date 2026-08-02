@@ -110,7 +110,7 @@ const hasResults = () => props.materias.length > 0 || props.materiales.length > 
                                     <div class="truncate font-medium text-ink">{{ m.titulo }}</div>
                                     <p v-if="m.descripcion" class="truncate text-sm text-stone-500">{{ m.descripcion }}</p>
                                     <div class="mt-1 text-xs text-stone-400">
-                                        {{ TIPO[m.tipo] }} · {{ m.materia.nombre }} · por {{ m.uploader }}
+                                        {{ TIPO[m.tipo] }} · {{ m.materia.nombre }}<template v-if="m.carpeta"> · 📁 {{ m.carpeta }}</template> · por {{ m.uploader }}
                                     </div>
                                 </div>
                             </Link>
