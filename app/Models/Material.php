@@ -12,6 +12,7 @@ class Material extends Model
 {
     protected $fillable = [
         'materia_id',
+        'subcarpeta_id',
         'user_id',
         'tipo',
         'titulo',
@@ -44,6 +45,11 @@ class Material extends Model
     public function materia(): BelongsTo
     {
         return $this->belongsTo(Materia::class);
+    }
+
+    public function subcarpeta(): BelongsTo
+    {
+        return $this->belongsTo(Subcarpeta::class);
     }
 
     public function user(): BelongsTo

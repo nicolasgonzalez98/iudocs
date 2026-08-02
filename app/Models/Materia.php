@@ -32,4 +32,9 @@ class Materia extends Model
     {
         return $this->hasMany(Material::class);
     }
+
+    public function subcarpetas(): HasMany
+    {
+        return $this->hasMany(Subcarpeta::class);
+    }
 }

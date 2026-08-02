@@ -7,6 +7,7 @@ use App\Http\Controllers\MateriaController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\SubcarpetaController;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -35,6 +36,11 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/mis-apuntes', [MaterialController::class, 'mine'])->name('materiales.mine');
     Route::patch('/materiales/{material}', [MaterialController::class, 'update'])->name('materiales.update');
     Route::delete('/materiales/{material}', [MaterialController::class, 'destroy'])->name('materiales.destroy');
+
+    // Subcarpetas (crear/renombrar/borrar → solo admin, vía Policy)
+    Route::post('/materias/{materia}/subcarpetas', [SubcarpetaController::class, 'store'])->name('subcarpetas.store');
+    Route::patch('/subcarpetas/{subcarpeta}', [SubcarpetaController::class, 'update'])->name('subcarpetas.update');
+    Route::delete('/subcarpetas/{subcarpeta}', [SubcarpetaController::class, 'destroy'])->name('subcarpetas.destroy');
 
     // Comentarios
     Route::post('/materiales/{material}/comentarios', [CommentController::class, 'store'])->name('comentarios.store');

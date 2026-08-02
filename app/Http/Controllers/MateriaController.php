@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Material;
 use App\Models\Materia;
+use App\Models\Subcarpeta;
 use App\Models\User;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -74,6 +75,7 @@ class MateriaController extends Controller
         $map = fn (Material $m) => [
             'id' => $m->id,
             'tipo' => $m->tipo,
+            'subcarpeta_id' => $m->subcarpeta_id,
             'titulo' => $m->titulo,
             'descripcion' => $m->descripcion,
             'original_name' => $m->original_name,
@@ -102,11 +104,23 @@ class MateriaController extends Controller
             ])->values(),
         ];
 
+        $subcarpetas = $materia->subcarpetas()
+            ->orderBy('nombre')
+            ->get(['id', 'tipo', 'nombre'])
+            ->map(fn (Subcarpeta $s) => [
+                'id' => $s->id,
+                'tipo' => $s->tipo,
+                'nombre' => $s->nombre,
+            ]);
+
         return Inertia::render('Materias/Show', [
             'materia' => $materia->only('id', 'nombre', 'anio', 'cuatrimestre', 'catedra', 'color', 'icon'),
             'apuntes' => $materials->where('tipo', 'apunte')->map($map)->values(),
             'campus' => $materials->where('tipo', 'campus')->map($map)->values(),
             'examenes' => $materials->where('tipo', 'examen')->map($map)->values(),
+            'subApuntes' => $subcarpetas->where('tipo', 'apunte')->values(),
+            'subCampus' => $subcarpetas->where('tipo', 'campus')->values(),
+            'subExamenes' => $subcarpetas->where('tipo', 'examen')->values(),
         ]);
     }
 }

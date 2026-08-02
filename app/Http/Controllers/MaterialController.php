@@ -58,11 +58,7 @@ class MaterialController extends Controller
      */
     public function update(Request $request, Material $material): RedirectResponse
     {
-        $user = $request->user();
-
-        if (! $user->isAdmin() && $material->user_id !== $user->id) {
-            abort(403);
-        }
+        abort_unless($request->user()->can('update', $material), 403);
 
         $data = $request->validate([
             'titulo' => ['required', 'string', 'max:255'],
@@ -151,11 +147,7 @@ class MaterialController extends Controller
      */
     public function destroy(Request $request, Material $material): RedirectResponse
     {
-        $user = $request->user();
-
-        if (! $user->isAdmin() && $material->user_id !== $user->id) {
-            abort(403);
-        }
+        abort_unless($request->user()->can('delete', $material), 403);
 
         $material->delete();
 

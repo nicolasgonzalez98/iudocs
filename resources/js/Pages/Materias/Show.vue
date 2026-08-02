@@ -3,7 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import CommentsPanel from '@/Components/CommentsPanel.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
-import MaterialCard from '@/Components/MaterialCard.vue';
+import MaterialSection from '@/Components/MaterialSection.vue';
 import Modal from '@/Components/Modal.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
@@ -12,7 +12,7 @@ import TextInput from '@/Components/TextInput.vue';
 import { fileIcon, formatBytes } from '@/files';
 import { materiaColor, periodoLabel } from '@/materiaColors';
 import { useConfirm } from '@/useConfirm';
-import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
 const { confirm } = useConfirm();
@@ -22,7 +22,12 @@ const props = defineProps({
     apuntes: { type: Array, default: () => [] },
     campus: { type: Array, default: () => [] },
     examenes: { type: Array, default: () => [] },
+    subApuntes: { type: Array, default: () => [] },
+    subCampus: { type: Array, default: () => [] },
+    subExamenes: { type: Array, default: () => [] },
 });
+
+const isAdmin = computed(() => usePage().props.auth.user.role === 'admin');
 
 const showModal = ref(false);
 const uploadTipo = ref('apunte');
@@ -44,17 +49,8 @@ const openMaterial = computed(
         ) ?? null,
 );
 
-// Orden dentro de la materia (client-side, sobre lo ya cargado)
+// Orden dentro de la materia (lo aplica cada MaterialSection)
 const sortBy = ref('recientes');
-const SORTERS = {
-    recientes: (a, b) => b.id - a.id,
-    utiles: (a, b) => b.helpful_count - a.helpful_count || b.id - a.id,
-    descargados: (a, b) => b.downloads - a.downloads || b.id - a.id,
-};
-const sortList = (list) => [...list].sort(SORTERS[sortBy.value]);
-const sortedApuntes = computed(() => sortList(props.apuntes));
-const sortedCampus = computed(() => sortList(props.campus));
-const sortedExamenes = computed(() => sortList(props.examenes));
 
 const vote = (material) => {
     router.post(route('materiales.vote', material.id), {}, { preserveScroll: true });
@@ -191,6 +187,68 @@ const submitEdit = () => {
         onSuccess: () => closeEdit(),
     });
 };
+
+// ── Subcarpetas ──────────────────────────────────────────────
+const TIPO_LABEL = { apunte: 'Apuntes', campus: 'Apuntes del campus', examen: 'Exámenes' };
+
+// Crear carpeta (solo admin)
+const showFolderModal = ref(false);
+const folderForm = useForm({ tipo: 'apunte', nombre: '', material_ids: [] });
+const folderLoose = computed(() => {
+    const src =
+        folderForm.tipo === 'apunte' ? props.apuntes : folderForm.tipo === 'campus' ? props.campus : props.examenes;
+    return src.filter((m) => !m.subcarpeta_id);
+});
+
+const openNewFolder = (tipo) => {
+    folderForm.clearErrors();
+    folderForm.tipo = tipo;
+    folderForm.nombre = '';
+    folderForm.material_ids = [];
+    showFolderModal.value = true;
+};
+const closeFolderModal = () => {
+    showFolderModal.value = false;
+};
+const submitFolder = () => {
+    folderForm.post(route('subcarpetas.store', props.materia.id), {
+        preserveScroll: true,
+        onSuccess: () => {
+            closeFolderModal();
+            folderForm.reset();
+        },
+    });
+};
+
+// Renombrar carpeta (solo admin)
+const showRenameModal = ref(false);
+const renameForm = useForm({ id: null, nombre: '' });
+const openRename = (folder) => {
+    renameForm.clearErrors();
+    renameForm.id = folder.id;
+    renameForm.nombre = folder.nombre;
+    showRenameModal.value = true;
+};
+const closeRename = () => {
+    showRenameModal.value = false;
+};
+const submitRename = () => {
+    renameForm.patch(route('subcarpetas.update', renameForm.id), {
+        preserveScroll: true,
+        onSuccess: () => closeRename(),
+    });
+};
+
+// Borrar carpeta (solo admin) — los archivos vuelven a "sueltos"
+const deleteFolder = async (folder) => {
+    const ok = await confirm({
+        title: 'Borrar carpeta',
+        message: `¿Borrar la carpeta "${folder.nombre}"? Los archivos que tenga adentro NO se borran: vuelven a "Otros archivos" en la sección.`,
+        confirmText: 'Borrar carpeta',
+        danger: true,
+    });
+    if (ok) router.delete(route('subcarpetas.destroy', folder.id), { preserveScroll: true });
+};
 </script>
 
 <template>
@@ -245,101 +303,62 @@ const submitEdit = () => {
                 </label>
             </div>
 
-            <!-- Apuntes -->
-            <section>
-                <div class="mb-4 flex items-center justify-between">
-                    <h3 class="text-sm font-semibold uppercase tracking-wide text-stone-500">
-                        📝 Apuntes ({{ apuntes.length }})
-                    </h3>
-                    <button
-                        type="button"
-                        @click="openUpload('apunte')"
-                        class="text-sm font-medium text-brand-600 hover:text-brand-700"
-                    >
-                        + Agregar apunte
-                    </button>
-                </div>
+            <MaterialSection
+                titulo="📝 Apuntes"
+                tipo="apunte"
+                add-label="+ Agregar apunte"
+                :materials="apuntes"
+                :subcarpetas="subApuntes"
+                :sort-by="sortBy"
+                :is-admin="isAdmin"
+                @upload="openUpload"
+                @new-folder="openNewFolder"
+                @rename-folder="openRename"
+                @delete-folder="deleteFolder"
+                @delete="destroy"
+                @edit="openEdit"
+                @comments="openMaterialId = $event.id"
+                @vote="vote"
+                @favorite="favorite"
+            />
 
-                <div v-if="apuntes.length === 0" class="rounded-xl border border-dashed border-stone-300 bg-white/50 p-8 text-center text-sm text-stone-500">
-                    Todavía no hay apuntes en esta materia.
-                </div>
-                <div v-else class="space-y-3">
-                    <MaterialCard
-                        v-for="m in sortedApuntes"
-                        :key="m.id"
-                        :material="m"
-                        @delete="destroy"
-                        @edit="openEdit"
-                        @comments="openMaterialId = $event.id"
-                        @vote="vote"
-                        @favorite="favorite"
-                    />
-                </div>
-            </section>
+            <MaterialSection
+                titulo="🏫 Apuntes del campus"
+                tipo="campus"
+                add-label="+ Agregar del campus"
+                :materials="campus"
+                :subcarpetas="subCampus"
+                :sort-by="sortBy"
+                :is-admin="isAdmin"
+                @upload="openUpload"
+                @new-folder="openNewFolder"
+                @rename-folder="openRename"
+                @delete-folder="deleteFolder"
+                @delete="destroy"
+                @edit="openEdit"
+                @comments="openMaterialId = $event.id"
+                @vote="vote"
+                @favorite="favorite"
+            />
 
-            <!-- Apuntes del campus -->
-            <section>
-                <div class="mb-4 flex items-center justify-between">
-                    <h3 class="text-sm font-semibold uppercase tracking-wide text-stone-500">
-                        🏫 Apuntes del campus ({{ campus.length }})
-                    </h3>
-                    <button
-                        type="button"
-                        @click="openUpload('campus')"
-                        class="text-sm font-medium text-brand-600 hover:text-brand-700"
-                    >
-                        + Agregar del campus
-                    </button>
-                </div>
-
-                <div v-if="campus.length === 0" class="rounded-xl border border-dashed border-stone-300 bg-white/50 p-8 text-center text-sm text-stone-500">
-                    Todavía no hay apuntes del campus en esta materia.
-                </div>
-                <div v-else class="space-y-3">
-                    <MaterialCard
-                        v-for="m in sortedCampus"
-                        :key="m.id"
-                        :material="m"
-                        @delete="destroy"
-                        @edit="openEdit"
-                        @comments="openMaterialId = $event.id"
-                        @vote="vote"
-                        @favorite="favorite"
-                    />
-                </div>
-            </section>
-
-            <!-- Exámenes -->
-            <section>
-                <div class="mb-4 flex items-center justify-between">
-                    <h3 class="text-sm font-semibold uppercase tracking-wide text-stone-500">
-                        🎓 Exámenes ({{ examenes.length }})
-                    </h3>
-                    <button
-                        type="button"
-                        @click="openUpload('examen')"
-                        class="text-sm font-medium text-brand-600 hover:text-brand-700"
-                    >
-                        + Agregar examen
-                    </button>
-                </div>
-
-                <div v-if="examenes.length === 0" class="rounded-xl border border-dashed border-stone-300 bg-white/50 p-8 text-center text-sm text-stone-500">
-                    Todavía no hay exámenes en esta materia.
-                </div>
-                <div v-else class="space-y-3">
-                    <MaterialCard
-                        v-for="m in sortedExamenes"
-                        :key="m.id"
-                        :material="m"
-                        @delete="destroy"
-                        @edit="openEdit"
-                        @comments="openMaterialId = $event.id"
-                        @vote="vote"
-                        @favorite="favorite"
-                    />
-                </div>
-            </section>
+            <MaterialSection
+                titulo="🎓 Exámenes"
+                tipo="examen"
+                add-label="+ Agregar examen"
+                :materials="examenes"
+                :subcarpetas="subExamenes"
+                :sort-by="sortBy"
+                :is-admin="isAdmin"
+                @upload="openUpload"
+                @new-folder="openNewFolder"
+                @rename-folder="openRename"
+                @delete-folder="deleteFolder"
+                @delete="destroy"
+                @edit="openEdit"
+                @comments="openMaterialId = $event.id"
+                @vote="vote"
+                @favorite="favorite"
+            />
         </div>
 
         <!-- Panel de comentarios -->
@@ -541,6 +560,92 @@ const submitEdit = () => {
                     <PrimaryButton :disabled="editForm.processing" :class="{ 'opacity-75': editForm.processing }">
                         <Spinner v-if="editForm.processing" class="-ms-1 me-2" />
                         Guardar cambios
+                    </PrimaryButton>
+                </div>
+            </form>
+        </Modal>
+
+        <!-- Modal nueva carpeta (solo admin) -->
+        <Modal :show="showFolderModal" @close="closeFolderModal">
+            <form @submit.prevent="submitFolder" class="p-6">
+                <h2 class="text-lg font-semibold text-ink">Nueva carpeta</h2>
+                <p class="mt-1 text-sm text-stone-500">En {{ TIPO_LABEL[folderForm.tipo] }}</p>
+
+                <div class="mt-5">
+                    <InputLabel for="folder-nombre" value="Nombre" />
+                    <TextInput
+                        id="folder-nombre"
+                        v-model="folderForm.nombre"
+                        type="text"
+                        class="mt-1 block w-full"
+                        placeholder="Ej: Unidad 1"
+                        required
+                        autofocus
+                    />
+                    <InputError class="mt-2" :message="folderForm.errors.nombre" />
+                </div>
+
+                <div class="mt-4">
+                    <InputLabel value="Archivos para poner en la carpeta (opcional)" />
+                    <p class="mt-0.5 text-xs text-stone-400">
+                        Solo se listan los que están sueltos en esta sección. Podés dejarla vacía.
+                    </p>
+                    <div
+                        v-if="folderLoose.length"
+                        class="mt-2 max-h-64 space-y-1 overflow-y-auto rounded-lg border border-stone-200 p-2"
+                    >
+                        <label
+                            v-for="m in folderLoose"
+                            :key="m.id"
+                            class="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-stone-50"
+                        >
+                            <input
+                                type="checkbox"
+                                :value="m.id"
+                                v-model="folderForm.material_ids"
+                                class="rounded border-stone-300 text-brand-600 focus:ring-brand-500"
+                            />
+                            <span class="min-w-0 truncate text-sm text-ink">{{ m.titulo }}</span>
+                        </label>
+                    </div>
+                    <p v-else class="mt-2 text-sm text-stone-400">
+                        No hay archivos sueltos para agregar. La carpeta se crea vacía.
+                    </p>
+                </div>
+
+                <div class="mt-6 flex justify-end gap-3">
+                    <SecondaryButton type="button" @click="closeFolderModal">Cancelar</SecondaryButton>
+                    <PrimaryButton :disabled="folderForm.processing" :class="{ 'opacity-75': folderForm.processing }">
+                        <Spinner v-if="folderForm.processing" class="-ms-1 me-2" />
+                        Crear carpeta
+                    </PrimaryButton>
+                </div>
+            </form>
+        </Modal>
+
+        <!-- Modal renombrar carpeta (solo admin) -->
+        <Modal :show="showRenameModal" @close="closeRename">
+            <form @submit.prevent="submitRename" class="p-6">
+                <h2 class="text-lg font-semibold text-ink">Renombrar carpeta</h2>
+
+                <div class="mt-5">
+                    <InputLabel for="rename-nombre" value="Nombre" />
+                    <TextInput
+                        id="rename-nombre"
+                        v-model="renameForm.nombre"
+                        type="text"
+                        class="mt-1 block w-full"
+                        required
+                        autofocus
+                    />
+                    <InputError class="mt-2" :message="renameForm.errors.nombre" />
+                </div>
+
+                <div class="mt-6 flex justify-end gap-3">
+                    <SecondaryButton type="button" @click="closeRename">Cancelar</SecondaryButton>
+                    <PrimaryButton :disabled="renameForm.processing" :class="{ 'opacity-75': renameForm.processing }">
+                        <Spinner v-if="renameForm.processing" class="-ms-1 me-2" />
+                        Guardar
                     </PrimaryButton>
                 </div>
             </form>
