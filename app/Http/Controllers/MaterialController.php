@@ -6,6 +6,7 @@ use App\Models\Material;
 use App\Models\Materia;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -13,35 +14,41 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class MaterialController extends Controller
 {
     /**
-     * Subir un apunte o examen a una materia. Cualquier usuario activo puede.
+     * Subir uno o varios materiales a una materia (todos del mismo tipo).
+     * Cualquier usuario activo puede. Cada archivo lleva su propio título/descripción.
      */
     public function store(Request $request, Materia $materia): RedirectResponse
     {
         $data = $request->validate([
-            'titulo' => ['required', 'string', 'max:255'],
             'tipo' => ['required', 'in:apunte,campus,examen'],
-            'descripcion' => ['nullable', 'string', 'max:1000'],
-            'file' => [
-                'required',
+            'files' => ['required', 'array', 'min:1'],
+            'files.*' => [
                 'file',
-                'max:10240', // 10 MB
+                'max:102400', // 100 MB c/u
                 'mimes:pdf,jpg,jpeg,png,doc,docx,ppt,pptx,xls,xlsx',
             ],
+            'titulos' => ['required', 'array'],
+            'titulos.*' => ['required', 'string', 'max:255'],
+            'descripciones' => ['nullable', 'array'],
+            'descripciones.*' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $file = $request->file('file');
-        $path = $file->store("materiales/{$materia->id}");
+        DB::transaction(function () use ($request, $materia, $data) {
+            foreach ($data['files'] as $i => $file) {
+                $path = $file->store("materiales/{$materia->id}");
 
-        $materia->materials()->create([
-            'user_id' => $request->user()->id,
-            'tipo' => $data['tipo'],
-            'titulo' => $data['titulo'],
-            'descripcion' => $data['descripcion'] ?? null,
-            'path' => $path,
-            'original_name' => $file->getClientOriginalName(),
-            'mime' => $file->getClientMimeType(),
-            'size' => $file->getSize(),
-        ]);
+                $materia->materials()->create([
+                    'user_id' => $request->user()->id,
+                    'tipo' => $data['tipo'],
+                    'titulo' => $data['titulos'][$i],
+                    'descripcion' => trim($data['descripciones'][$i] ?? '') ?: null,
+                    'path' => $path,
+                    'original_name' => $file->getClientOriginalName(),
+                    'mime' => $file->getClientMimeType(),
+                    'size' => $file->getSize(),
+                ]);
+            }
+        });
 
         return back();
     }

@@ -9,7 +9,7 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import Spinner from '@/Components/Spinner.vue';
 import TextInput from '@/Components/TextInput.vue';
-import { formatBytes } from '@/files';
+import { fileIcon, formatBytes } from '@/files';
 import { materiaColor, periodoLabel } from '@/materiaColors';
 import { useConfirm } from '@/useConfirm';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
@@ -25,7 +25,15 @@ const props = defineProps({
 });
 
 const showModal = ref(false);
-const fileInput = ref(null);
+const uploadTipo = ref('apunte');
+const dragging = ref(false);
+const uploadError = ref('');
+
+// Archivos elegidos para subir (multi): [{ file, titulo, descripcion, preview }]
+const items = ref([]);
+
+const MAX_BYTES = 100 * 1024 * 1024; // 100 MB por archivo
+const totalBytes = computed(() => items.value.reduce((sum, it) => sum + it.file.size, 0));
 
 // Panel de comentarios: guardamos el id y buscamos el material actualizado en props
 const openMaterialId = ref(null);
@@ -57,19 +65,63 @@ const favorite = (material) => {
 };
 
 const form = useForm({
-    titulo: '',
     tipo: 'apunte',
-    descripcion: '',
-    file: null,
+    files: [],
+    titulos: [],
+    descripciones: [],
 });
+
+// Título "lindo" a partir del nombre de archivo: unidad-3.pdf -> "Unidad 3"
+const titleFromName = (name) => {
+    const base = name.replace(/\.[^/.]+$/, '');
+    const clean = base.replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim();
+    return clean.charAt(0).toUpperCase() + clean.slice(1);
+};
+
+const addFiles = (fileList) => {
+    const rejected = [];
+    for (const file of Array.from(fileList)) {
+        if (file.size > MAX_BYTES) {
+            rejected.push(`${file.name} (${formatBytes(file.size)})`);
+            continue;
+        }
+        items.value.push({
+            file,
+            titulo: titleFromName(file.name),
+            descripcion: '',
+            preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : null,
+        });
+    }
+    uploadError.value = rejected.length
+        ? `${rejected.length === 1 ? 'Este archivo supera' : 'Estos archivos superan'} el máximo de 100 MB y no se agregaron: ${rejected.join(', ')}`
+        : '';
+};
+
+const clearItems = () => {
+    items.value.forEach((it) => it.preview && URL.revokeObjectURL(it.preview));
+    items.value = [];
+};
+
+const removeItem = (i) => {
+    const [removed] = items.value.splice(i, 1);
+    if (removed?.preview) URL.revokeObjectURL(removed.preview);
+};
+
+const onFile = (e) => {
+    addFiles(e.target.files);
+    e.target.value = ''; // permite volver a elegir el mismo archivo
+};
+
+const onDrop = (e) => {
+    dragging.value = false;
+    if (e.dataTransfer?.files?.length) addFiles(e.dataTransfer.files);
+};
 
 const openUpload = (tipo = 'apunte') => {
     form.clearErrors();
-    form.titulo = '';
-    form.tipo = tipo;
-    form.descripcion = '';
-    form.file = null;
-    if (fileInput.value) fileInput.value.value = '';
+    uploadError.value = '';
+    uploadTipo.value = tipo;
+    clearItems();
     showModal.value = true;
 };
 
@@ -77,18 +129,28 @@ const closeModal = () => {
     showModal.value = false;
 };
 
-const onFile = (e) => {
-    form.file = e.target.files[0] ?? null;
-};
-
 const submit = () => {
+    form.tipo = uploadTipo.value;
+    form.files = items.value.map((it) => it.file);
+    form.titulos = items.value.map((it) => it.titulo);
+    form.descripciones = items.value.map((it) => it.descripcion);
+
+    uploadError.value = '';
     form.post(route('materiales.store', props.materia.id), {
         preserveScroll: true,
         forceFormData: true,
         onSuccess: () => {
             closeModal();
+            clearItems();
             form.reset();
-            if (fileInput.value) fileInput.value.value = '';
+        },
+        onError: (errors) => {
+            // Si el server rechazó sin errores de campo (típico: superó el límite
+            // del servidor / post_max_size), mostramos un mensaje claro igual.
+            if (!errors || Object.keys(errors).length === 0) {
+                uploadError.value =
+                    'No se pudieron subir los archivos. Puede que el tamaño total supere el límite del servidor. Probá con menos archivos o más livianos.';
+            }
         },
     });
 };
@@ -287,36 +349,44 @@ const submitEdit = () => {
             @close="openMaterialId = null"
         />
 
-        <!-- Modal de subida -->
+        <!-- Modal de subida (multi-archivo) -->
         <Modal :show="showModal" @close="closeModal">
-            <form @submit.prevent="submit" class="p-6">
-                <h2 class="text-lg font-semibold text-ink">Subir material</h2>
+            <div class="p-6">
+                <div class="flex items-center justify-between gap-3">
+                    <h2 class="text-lg font-semibold text-ink">Subir material</h2>
+                    <span
+                        v-if="items.length"
+                        class="shrink-0 rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-semibold text-brand-700"
+                    >
+                        {{ items.length }} {{ items.length === 1 ? 'archivo' : 'archivos' }} · {{ formatBytes(totalBytes) }}
+                    </span>
+                </div>
 
-                <!-- Tipo -->
+                <!-- Tipo (todo el lote) -->
                 <div class="mt-5">
                     <InputLabel value="Tipo" />
                     <div class="mt-2 grid grid-cols-3 gap-2">
                         <button
                             type="button"
-                            @click="form.tipo = 'apunte'"
+                            @click="uploadTipo = 'apunte'"
                             class="rounded-lg border px-3 py-2 text-sm font-semibold transition"
-                            :class="form.tipo === 'apunte' ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-stone-300 text-stone-600 hover:bg-stone-50'"
+                            :class="uploadTipo === 'apunte' ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-stone-300 text-stone-600 hover:bg-stone-50'"
                         >
                             📝 Apunte
                         </button>
                         <button
                             type="button"
-                            @click="form.tipo = 'campus'"
+                            @click="uploadTipo = 'campus'"
                             class="rounded-lg border px-3 py-2 text-sm font-semibold transition"
-                            :class="form.tipo === 'campus' ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-stone-300 text-stone-600 hover:bg-stone-50'"
+                            :class="uploadTipo === 'campus' ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-stone-300 text-stone-600 hover:bg-stone-50'"
                         >
                             🏫 Campus
                         </button>
                         <button
                             type="button"
-                            @click="form.tipo = 'examen'"
+                            @click="uploadTipo = 'examen'"
                             class="rounded-lg border px-3 py-2 text-sm font-semibold transition"
-                            :class="form.tipo === 'examen' ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-stone-300 text-stone-600 hover:bg-stone-50'"
+                            :class="uploadTipo === 'examen' ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-stone-300 text-stone-600 hover:bg-stone-50'"
                         >
                             🎓 Examen
                         </button>
@@ -324,58 +394,90 @@ const submitEdit = () => {
                     <InputError class="mt-2" :message="form.errors.tipo" />
                 </div>
 
-                <!-- Título -->
-                <div class="mt-4">
-                    <InputLabel for="titulo" value="Título" />
-                    <TextInput
-                        id="titulo"
-                        v-model="form.titulo"
-                        type="text"
-                        class="mt-1 block w-full"
-                        placeholder="Ej: Resumen unidad 3"
-                        required
+                <!-- Dropzone -->
+                <label
+                    class="mt-4 flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed px-4 py-6 text-center transition"
+                    :class="dragging ? 'border-brand-500 bg-brand-50' : 'border-stone-300 bg-stone-50 hover:border-brand-400 hover:bg-brand-50/40'"
+                    @dragover.prevent="dragging = true"
+                    @dragenter.prevent="dragging = true"
+                    @dragleave.prevent="dragging = false"
+                    @drop.prevent="onDrop"
+                >
+                    <input
+                        type="file"
+                        multiple
+                        class="hidden"
+                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.ppt,.pptx,.xls,.xlsx,image/*"
+                        @change="onFile"
                     />
-                    <InputError class="mt-2" :message="form.errors.titulo" />
+                    <span class="text-2xl">⬆️</span>
+                    <span class="mt-1 text-sm font-medium text-stone-600">Arrastrá archivos acá o tocá para elegir</span>
+                    <span class="text-xs text-stone-400">PDF, imagen u Office · hasta 100 MB c/u</span>
+                </label>
+                <InputError class="mt-2" :message="form.errors.files" />
+
+                <!-- Aviso de error (tamaño / rechazo del servidor) -->
+                <div
+                    v-if="uploadError"
+                    class="mt-3 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+                >
+                    <span class="shrink-0">⚠️</span>
+                    <span>{{ uploadError }}</span>
                 </div>
 
-                <!-- Descripción -->
-                <div class="mt-4">
-                    <InputLabel for="descripcion" value="Descripción (opcional)" />
-                    <textarea
-                        id="descripcion"
-                        v-model="form.descripcion"
-                        rows="2"
-                        class="mt-1 block w-full rounded-lg border-stone-300 shadow-sm focus:border-brand-500 focus:ring-brand-500"
-                        placeholder="Ej: Le falta la última hoja"
-                    ></textarea>
-                    <InputError class="mt-2" :message="form.errors.descripcion" />
-                </div>
-
-                <!-- Archivo -->
-                <div class="mt-4">
-                    <InputLabel value="Archivo" />
-                    <label
-                        class="mt-1 flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-stone-300 bg-stone-50 px-4 py-6 text-center transition hover:border-brand-400 hover:bg-brand-50/40"
+                <!-- Lista de archivos elegidos -->
+                <div v-if="items.length" class="mt-4 max-h-80 space-y-3 overflow-y-auto pr-1">
+                    <div
+                        v-for="(it, i) in items"
+                        :key="i"
+                        class="rounded-xl border border-stone-200 bg-white p-3"
                     >
-                        <input
-                            ref="fileInput"
-                            type="file"
-                            class="hidden"
-                            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.ppt,.pptx,.xls,.xlsx,image/*"
-                            @change="onFile"
-                        />
-                        <template v-if="form.file">
-                            <span class="text-2xl">📎</span>
-                            <span class="mt-1 max-w-full truncate text-sm font-medium text-ink">{{ form.file.name }}</span>
-                            <span class="text-xs text-stone-500">{{ formatBytes(form.file.size) }} · tocá para cambiar</span>
-                        </template>
-                        <template v-else>
-                            <span class="text-2xl">⬆️</span>
-                            <span class="mt-1 text-sm font-medium text-stone-600">Elegí un archivo</span>
-                            <span class="text-xs text-stone-400">PDF, imagen u Office · hasta 10 MB</span>
-                        </template>
-                    </label>
-                    <InputError class="mt-2" :message="form.errors.file" />
+                        <div class="flex items-start gap-3">
+                            <img
+                                v-if="it.preview"
+                                :src="it.preview"
+                                alt=""
+                                class="h-11 w-11 shrink-0 rounded-lg object-cover"
+                            />
+                            <div
+                                v-else
+                                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-stone-100 text-xl"
+                            >
+                                {{ fileIcon(it.file.type, it.file.name) }}
+                            </div>
+
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="min-w-0 truncate text-xs text-stone-400">
+                                        {{ it.file.name }} · {{ formatBytes(it.file.size) }}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        @click="removeItem(i)"
+                                        aria-label="Quitar archivo"
+                                        class="shrink-0 rounded-lg px-1.5 py-0.5 text-stone-400 transition hover:bg-red-50 hover:text-red-600"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                                <TextInput
+                                    v-model="it.titulo"
+                                    type="text"
+                                    class="mt-1 block w-full"
+                                    placeholder="Título"
+                                />
+                                <InputError class="mt-1" :message="form.errors['titulos.' + i]" />
+                                <InputError class="mt-1" :message="form.errors['files.' + i]" />
+                                <input
+                                    v-model="it.descripcion"
+                                    type="text"
+                                    class="mt-2 block w-full rounded-lg border-stone-300 text-sm shadow-sm focus:border-brand-500 focus:ring-brand-500"
+                                    placeholder="¿De qué trata? (opcional)"
+                                />
+                                <InputError class="mt-1" :message="form.errors['descripciones.' + i]" />
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Barra de progreso -->
@@ -391,12 +493,17 @@ const submitEdit = () => {
 
                 <div class="mt-6 flex justify-end gap-3">
                     <SecondaryButton type="button" @click="closeModal">Cancelar</SecondaryButton>
-                    <PrimaryButton :disabled="form.processing" :class="{ 'opacity-75': form.processing }">
+                    <PrimaryButton
+                        type="button"
+                        @click="submit"
+                        :disabled="form.processing || items.length === 0"
+                        :class="{ 'opacity-75': form.processing || items.length === 0 }"
+                    >
                         <Spinner v-if="form.processing" class="-ms-1 me-2" />
-                        Subir
+                        {{ items.length > 1 ? `Subir ${items.length}` : 'Subir' }}
                     </PrimaryButton>
                 </div>
-            </form>
+            </div>
         </Modal>
 
         <!-- Modal de edición (título / descripción) -->
