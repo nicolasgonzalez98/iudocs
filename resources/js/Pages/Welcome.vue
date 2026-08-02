@@ -89,8 +89,8 @@ const features = [
                     <span class="text-brand-600">en un solo lugar</span>
                 </h1>
                 <p class="mx-auto mt-5 max-w-xl text-lg text-stone-600">
-                    Un portal colaborativo para compartir apuntes por materia.
-                    Subís, comentás y estudian todos juntos.
+                    Los apuntes de la cursada, subidos y comentados por los propios estudiantes.
+                    Ordenados por materia, en un solo lugar.
                 </p>
 
                 <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
