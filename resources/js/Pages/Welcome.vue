@@ -23,7 +23,7 @@ const features = [
     {
         icon: '📚',
         title: 'Ordenado por materia',
-        text: 'Nada de apuntes perdidos en mil chats. Cada materia con sus apuntes y exámenes en un solo lugar.',
+        text: 'Nada de apuntes perdidos en mil chats. Cada materia con sus apuntes en un solo lugar.',
     },
     {
         icon: '💬',
@@ -82,14 +82,14 @@ const features = [
                 <span
                     class="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700"
                 >
-                    📖 Apuntes y exámenes de la cursada
+                    📖 Apuntes de la cursada
                 </span>
                 <h1 class="mx-auto mt-6 max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl">
-                    Todos los apuntes y exámenes,
+                    Todos los apuntes,
                     <span class="text-brand-600">en un solo lugar</span>
                 </h1>
                 <p class="mx-auto mt-5 max-w-xl text-lg text-stone-600">
-                    Un portal colaborativo para compartir apuntes y exámenes por materia.
+                    Un portal colaborativo para compartir apuntes por materia.
                     Subís, comentás y estudian todos juntos.
                 </p>
 
