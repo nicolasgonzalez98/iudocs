@@ -52,6 +52,15 @@ class User extends Authenticatable
         return $this->status === 'blocked';
     }
 
+    /**
+     * ¿Puede ver/subir/bajar exámenes? Solo usuarios aprobados (activos) o admin.
+     * Los "pending" navegan libre pero NO acceden a la sección Exámenes.
+     */
+    public function canSeeExamenes(): bool
+    {
+        return $this->isActive() || $this->isAdmin();
+    }
+
     public function favoriteMaterials(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Material::class, 'material_favorites')->withTimestamps();

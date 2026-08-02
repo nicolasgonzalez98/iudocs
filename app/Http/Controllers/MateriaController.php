@@ -17,6 +17,7 @@ class MateriaController extends Controller
     public function index(): Response
     {
         $recent = Material::with(['materia:id,nombre,color,icon', 'user:id,name'])
+            ->when(! auth()->user()->canSeeExamenes(), fn ($q) => $q->where('tipo', '!=', 'examen'))
             ->latest()
             ->limit(6)
             ->get()
@@ -114,14 +115,18 @@ class MateriaController extends Controller
                 'nombre' => $s->nombre,
             ]);
 
+        // Los "pending" no ven la sección Exámenes (hasta que la admin los apruebe).
+        $canExamenes = $user->canSeeExamenes();
+
         return Inertia::render('Materias/Show', [
             'materia' => $materia->only('id', 'nombre', 'anio', 'cuatrimestre', 'catedra', 'color', 'icon'),
+            'canExamenes' => $canExamenes,
             'apuntes' => $materials->where('tipo', 'apunte')->map($map)->values(),
             'campus' => $materials->where('tipo', 'campus')->map($map)->values(),
-            'examenes' => $materials->where('tipo', 'examen')->map($map)->values(),
+            'examenes' => $canExamenes ? $materials->where('tipo', 'examen')->map($map)->values() : [],
             'subApuntes' => $subcarpetas->where('tipo', 'apunte')->values(),
             'subCampus' => $subcarpetas->where('tipo', 'campus')->values(),
-            'subExamenes' => $subcarpetas->where('tipo', 'examen')->values(),
+            'subExamenes' => $canExamenes ? $subcarpetas->where('tipo', 'examen')->values() : [],
         ]);
     }
 }

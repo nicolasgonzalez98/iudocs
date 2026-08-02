@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -58,6 +59,25 @@ class UserController extends Controller
         }
 
         $user->update(['status' => 'blocked']);
+
+        return back();
+    }
+
+    /**
+     * Cambiar el rol de un usuario (estudiante ↔ admin).
+     * No se puede cambiar el rol de uno mismo (para no quedarse sin admin sin querer).
+     */
+    public function role(Request $request, User $user): RedirectResponse
+    {
+        if ($user->id === auth()->id()) {
+            return back()->withErrors(['user' => 'No podés cambiar tu propio rol.']);
+        }
+
+        $data = $request->validate([
+            'role' => ['required', 'in:member,admin'],
+        ]);
+
+        $user->update(['role' => $data['role']]);
 
         return back();
     }

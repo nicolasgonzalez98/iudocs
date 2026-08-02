@@ -50,6 +50,19 @@ const block = async (user) => {
         },
     );
 };
+
+const changeRole = (user, role) => {
+    if (role === user.role) return;
+    router.patch(
+        route('admin.users.role', user.id),
+        { role },
+        {
+            preserveScroll: true,
+            onStart: () => (busyId.value = user.id),
+            onFinish: () => (busyId.value = null),
+        },
+    );
+};
 </script>
 
 <template>
@@ -138,6 +151,7 @@ const block = async (user) => {
                             <tr class="text-left text-xs font-semibold uppercase tracking-wide text-stone-500">
                                 <th class="px-4 py-3">Usuario</th>
                                 <th class="px-4 py-3">Estado</th>
+                                <th class="px-4 py-3">Rol</th>
                                 <th class="px-4 py-3 text-right">Acción</th>
                             </tr>
                         </thead>
@@ -157,6 +171,19 @@ const block = async (user) => {
                                 </td>
                                 <td class="px-4 py-3">
                                     <StatusBadge :status="user.status" />
+                                </td>
+                                <td class="px-4 py-3">
+                                    <span v-if="user.id === meId" class="text-xs text-stone-400">Admin (vos)</span>
+                                    <select
+                                        v-else
+                                        :value="user.role"
+                                        :disabled="busyId === user.id"
+                                        @change="changeRole(user, $event.target.value)"
+                                        class="rounded-lg border-stone-300 py-1 text-sm shadow-sm focus:border-brand-500 focus:ring-brand-500 disabled:opacity-50"
+                                    >
+                                        <option value="member">Estudiante</option>
+                                        <option value="admin">Admin</option>
+                                    </select>
                                 </td>
                                 <td class="px-4 py-3 text-right">
                                     <span v-if="user.id === meId" class="text-xs text-stone-400">vos</span>
@@ -183,7 +210,7 @@ const block = async (user) => {
                                 </td>
                             </tr>
                             <tr v-if="others.length === 0">
-                                <td colspan="3" class="px-4 py-8 text-center text-sm text-stone-500">
+                                <td colspan="4" class="px-4 py-8 text-center text-sm text-stone-500">
                                     Todavía no hay otros usuarios.
                                 </td>
                             </tr>

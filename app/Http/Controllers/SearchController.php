@@ -30,6 +30,7 @@ class SearchController extends Controller
                     $w->where('titulo', 'like', $like)
                         ->orWhere('descripcion', 'like', $like);
                 })
+                ->when(! $request->user()->canSeeExamenes(), fn ($q) => $q->where('tipo', '!=', 'examen'))
                 ->latest()
                 ->limit(40)
                 ->get()

@@ -84,6 +84,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/users', [AdminUserController::class, 'index'])->name('users');
     Route::patch('/users/{user}/activate', [AdminUserController::class, 'activate'])->name('users.activate');
     Route::patch('/users/{user}/block', [AdminUserController::class, 'block'])->name('users.block');
+    Route::patch('/users/{user}/role', [AdminUserController::class, 'role'])->name('users.role');
 
     Route::get('/materias', [AdminMateriaController::class, 'index'])->name('materias');
     Route::post('/materias', [AdminMateriaController::class, 'store'])->name('materias.store');

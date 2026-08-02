@@ -35,6 +35,9 @@ class MaterialController extends Controller
             'subcarpeta_id' => ['nullable', 'integer'],
         ]);
 
+        // Los "pending" no pueden subir exámenes.
+        abort_if($data['tipo'] === 'examen' && ! $request->user()->canSeeExamenes(), 403);
+
         // Carpeta destino (opcional): debe ser de esta materia y del mismo tipo.
         $subcarpetaId = null;
         if (! empty($data['subcarpeta_id'])) {
@@ -152,6 +155,9 @@ class MaterialController extends Controller
      */
     public function download(Material $material): StreamedResponse
     {
+        // Los "pending" no pueden bajar exámenes (ni siquiera por URL directa).
+        abort_if($material->tipo === 'examen' && ! auth()->user()->canSeeExamenes(), 403);
+
         $material->increment('downloads');
 
         return response()->streamDownload(function () use ($material) {

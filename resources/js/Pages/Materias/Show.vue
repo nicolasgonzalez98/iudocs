@@ -25,6 +25,7 @@ const props = defineProps({
     subApuntes: { type: Array, default: () => [] },
     subCampus: { type: Array, default: () => [] },
     subExamenes: { type: Array, default: () => [] },
+    canExamenes: { type: Boolean, default: true },
 });
 
 const isAdmin = computed(() => usePage().props.auth.user.role === 'admin');
@@ -422,6 +423,7 @@ const reorderFolders = ({ tipo, ids }) => {
             />
 
             <MaterialSection
+                v-if="canExamenes"
                 titulo="🎓 Exámenes"
                 tipo="examen"
                 add-label="+ Agregar examen"
@@ -467,7 +469,7 @@ const reorderFolders = ({ tipo, ids }) => {
                 <!-- Tipo (todo el lote) -->
                 <div class="mt-5">
                     <InputLabel value="Tipo" />
-                    <div class="mt-2 grid grid-cols-3 gap-2">
+                    <div class="mt-2 grid gap-2" :class="canExamenes ? 'grid-cols-3' : 'grid-cols-2'">
                         <button
                             type="button"
                             @click="setUploadTipo('apunte')"
@@ -485,6 +487,7 @@ const reorderFolders = ({ tipo, ids }) => {
                             🏫 Campus
                         </button>
                         <button
+                            v-if="canExamenes"
                             type="button"
                             @click="setUploadTipo('examen')"
                             class="rounded-lg border px-3 py-2 text-sm font-semibold transition"
