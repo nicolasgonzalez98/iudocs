@@ -17,6 +17,8 @@ class SearchController extends Controller
         $materias = [];
         $materiales = [];
 
+        $canSeeUploader = $request->user()->isAdmin();
+
         if (mb_strlen($q) >= 2) {
             $like = '%'.$q.'%';
 
@@ -39,7 +41,7 @@ class SearchController extends Controller
                     'tipo' => $m->tipo,
                     'titulo' => $m->titulo,
                     'descripcion' => $m->descripcion,
-                    'uploader' => $m->user->name,
+                    'uploader' => $canSeeUploader ? $m->user->name : null,
                     'carpeta' => $m->subcarpeta?->nombre,
                     'materia' => [
                         'id' => $m->materia->id,

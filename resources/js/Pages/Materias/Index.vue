@@ -128,7 +128,7 @@ const groups = computed(() => {
                         <div class="min-w-0">
                             <div class="truncate text-sm font-medium text-ink">{{ m.titulo }}</div>
                             <div class="truncate text-xs text-stone-400">
-                                {{ m.materia.nombre }} · por {{ m.uploader }}
+                                {{ m.materia.nombre }}<template v-if="m.uploader"> · por {{ m.uploader }}</template>
                             </div>
                         </div>
                     </Link>

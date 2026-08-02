@@ -34,7 +34,7 @@ defineEmits(['delete', 'edit', 'move', 'toggle-select', 'comments', 'vote', 'fav
                 {{ material.descripcion }}
             </p>
             <div class="mt-2 text-xs text-stone-400">
-                Subido por {{ material.uploader.name }} · {{ material.created_at }} ·
+                <template v-if="material.uploader">Subido por {{ material.uploader.name }} · </template>{{ material.created_at }} ·
                 {{ formatBytes(material.size) }} · ⬇ {{ material.downloads }}
             </div>
 

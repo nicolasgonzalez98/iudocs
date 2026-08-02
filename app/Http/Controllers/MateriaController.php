@@ -16,6 +16,8 @@ class MateriaController extends Controller
      */
     public function index(): Response
     {
+        $canSeeUploader = auth()->user()->isAdmin();
+
         $recent = Material::with(['materia:id,nombre,color,icon', 'user:id,name'])
             ->when(! auth()->user()->canSeeExamenes(), fn ($q) => $q->where('tipo', '!=', 'examen'))
             ->latest()
@@ -25,7 +27,7 @@ class MateriaController extends Controller
                 'id' => $m->id,
                 'tipo' => $m->tipo,
                 'titulo' => $m->titulo,
-                'uploader' => $m->user->name,
+                'uploader' => $canSeeUploader ? $m->user->name : null,
                 'materia' => [
                     'id' => $m->materia->id,
                     'nombre' => $m->materia->nombre,
@@ -61,6 +63,8 @@ class MateriaController extends Controller
     public function show(Materia $materia): Response
     {
         $user = auth()->user();
+        // Solo el admin puede ver quién subió cada archivo.
+        $canSeeUploader = $user->isAdmin();
 
         $materials = $materia->materials()
             ->with([
@@ -87,10 +91,10 @@ class MateriaController extends Controller
             'has_voted' => $m->voters->contains('id', $user->id),
             'is_favorite' => $m->favoritedBy->contains('id', $user->id),
             'created_at' => $m->created_at->toDateString(),
-            'uploader' => [
+            'uploader' => $canSeeUploader ? [
                 'name' => $m->user->name,
                 'avatar' => $m->user->avatar,
-            ],
+            ] : null,
             'can_delete' => $user->isAdmin() || $m->user_id === $user->id,
             'comments_count' => $m->comments->count(),
             'comments' => $m->comments->map(fn (\App\Models\Comment $c) => [
