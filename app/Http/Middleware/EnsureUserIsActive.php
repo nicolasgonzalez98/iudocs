@@ -7,9 +7,9 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Bloquea el acceso a la app a los usuarios que no están "activos":
- * - pending  → pantalla "Esperando aprobación"
- * - blocked  → pantalla "Bloqueado"
+ * Solo corta el paso a los usuarios BLOQUEADOS.
+ * Los "pending" navegan libremente (quedan igual en la lista de
+ * "Solicitudes pendientes" del panel para que la admin los revise).
  */
 class EnsureUserIsActive
 {
@@ -17,10 +17,8 @@ class EnsureUserIsActive
     {
         $user = $request->user();
 
-        if ($user && ! $user->isActive()) {
-            return $user->isBlocked()
-                ? redirect()->route('blocked')
-                : redirect()->route('pending');
+        if ($user && $user->isBlocked()) {
+            return redirect()->route('blocked');
         }
 
         return $next($request);

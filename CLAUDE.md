@@ -69,7 +69,7 @@ subida de archivos, roles/moderación y features sociales.
 | **Comment** | material_id, user_id, texto |
 
 **Permisos:**
-- Ver contenido → solo usuarios **activos** (los `pending` ven "esperando aprobación"; los `blocked`, bloqueado).
+- Ver/usar el contenido → **todos menos los bloqueados**. Los `pending` **navegan libremente** (se sacó el gating de aprobación), pero **siguen apareciendo en "Solicitudes pendientes"** para que la admin apruebe/rechace cuando quiera. Solo los `blocked` ven la pantalla de bloqueo.
 - Subir material → cualquier usuario activo.
 - **Borrar material → solo el dueño o un admin.**
 - Aprobar/rechazar registros y bloquear/desbloquear usuarios → **admin**.

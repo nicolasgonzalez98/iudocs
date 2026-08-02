@@ -19,6 +19,7 @@ defineEmits([
     'delete-folder',
     'delete',
     'edit',
+    'move',
     'comments',
     'vote',
     'favorite',
@@ -127,6 +128,7 @@ const isOpen = (id) => !collapsed.value[id];
                         :material="m"
                         @delete="$emit('delete', $event)"
                         @edit="$emit('edit', $event)"
+                        @move="$emit('move', $event)"
                         @comments="$emit('comments', $event)"
                         @vote="$emit('vote', $event)"
                         @favorite="$emit('favorite', $event)"
@@ -147,6 +149,7 @@ const isOpen = (id) => !collapsed.value[id];
                 :material="m"
                 @delete="$emit('delete', $event)"
                 @edit="$emit('edit', $event)"
+                @move="$emit('move', $event)"
                 @comments="$emit('comments', $event)"
                 @vote="$emit('vote', $event)"
                 @favorite="$emit('favorite', $event)"

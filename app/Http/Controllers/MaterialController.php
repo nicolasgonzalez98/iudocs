@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Material;
 use App\Models\Materia;
+use App\Models\Subcarpeta;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -31,14 +32,24 @@ class MaterialController extends Controller
             'titulos.*' => ['required', 'string', 'max:255'],
             'descripciones' => ['nullable', 'array'],
             'descripciones.*' => ['nullable', 'string', 'max:1000'],
+            'subcarpeta_id' => ['nullable', 'integer'],
         ]);
 
-        DB::transaction(function () use ($request, $materia, $data) {
+        // Carpeta destino (opcional): debe ser de esta materia y del mismo tipo.
+        $subcarpetaId = null;
+        if (! empty($data['subcarpeta_id'])) {
+            $subcarpetaId = $materia->subcarpetas()
+                ->where('tipo', $data['tipo'])
+                ->find($data['subcarpeta_id'])?->id;
+        }
+
+        DB::transaction(function () use ($request, $materia, $data, $subcarpetaId) {
             foreach ($data['files'] as $i => $file) {
                 $path = $file->store("materiales/{$materia->id}");
 
                 $materia->materials()->create([
                     'user_id' => $request->user()->id,
+                    'subcarpeta_id' => $subcarpetaId,
                     'tipo' => $data['tipo'],
                     'titulo' => $data['titulos'][$i],
                     'descripcion' => trim($data['descripciones'][$i] ?? '') ?: null,
@@ -66,6 +77,35 @@ class MaterialController extends Controller
         ]);
 
         $material->update($data);
+
+        return back();
+    }
+
+    /**
+     * Mover un material a una subcarpeta (o sacarlo → subcarpeta_id null).
+     * Permiso: dueño o admin. La carpeta destino debe ser de la misma
+     * materia y del mismo tipo que el material.
+     */
+    public function move(Request $request, Material $material): RedirectResponse
+    {
+        abort_unless($request->user()->can('move', $material), 403);
+
+        $data = $request->validate([
+            'subcarpeta_id' => ['nullable', 'integer'],
+        ]);
+
+        $subcarpetaId = null;
+        if (! empty($data['subcarpeta_id'])) {
+            $sub = Subcarpeta::where('id', $data['subcarpeta_id'])
+                ->where('materia_id', $material->materia_id)
+                ->where('tipo', $material->tipo)
+                ->first();
+
+            abort_unless($sub !== null, 422);
+            $subcarpetaId = $sub->id;
+        }
+
+        $material->update(['subcarpeta_id' => $subcarpetaId]);
 
         return back();
     }

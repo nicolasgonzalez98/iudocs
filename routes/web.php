@@ -35,6 +35,7 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::post('/materiales/{material}/favorito', [MaterialController::class, 'toggleFavorite'])->name('materiales.favorite');
     Route::get('/mis-apuntes', [MaterialController::class, 'mine'])->name('materiales.mine');
     Route::patch('/materiales/{material}', [MaterialController::class, 'update'])->name('materiales.update');
+    Route::patch('/materiales/{material}/mover', [MaterialController::class, 'move'])->name('materiales.move');
     Route::delete('/materiales/{material}', [MaterialController::class, 'destroy'])->name('materiales.destroy');
 
     // Subcarpetas (crear/renombrar/borrar → solo admin, vía Policy)

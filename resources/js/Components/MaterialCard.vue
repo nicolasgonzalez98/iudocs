@@ -6,7 +6,7 @@ defineProps({
     material: { type: Object, required: true },
 });
 
-defineEmits(['delete', 'edit', 'comments', 'vote', 'favorite']);
+defineEmits(['delete', 'edit', 'move', 'comments', 'vote', 'favorite']);
 </script>
 
 <template>
@@ -71,6 +71,16 @@ defineEmits(['delete', 'edit', 'comments', 'vote', 'favorite']);
                     class="rounded-lg px-2 py-1.5 text-sm text-stone-400 transition hover:bg-brand-50 hover:text-brand-600"
                 >
                     ✏️
+                </button>
+            </Tooltip>
+            <Tooltip v-if="material.can_delete" text="Mover a carpeta">
+                <button
+                    type="button"
+                    @click="$emit('move', material)"
+                    aria-label="Mover a carpeta"
+                    class="rounded-lg px-2 py-1.5 text-sm text-stone-400 transition hover:bg-brand-50 hover:text-brand-600"
+                >
+                    📁
                 </button>
             </Tooltip>
             <Tooltip v-if="material.can_delete" text="Borrar">

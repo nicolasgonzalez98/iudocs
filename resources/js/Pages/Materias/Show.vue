@@ -65,7 +65,18 @@ const form = useForm({
     files: [],
     titulos: [],
     descripciones: [],
+    subcarpeta_id: null,
 });
+
+// Carpetas disponibles para el tipo elegido en el modal de subida
+const uploadFolders = computed(() => {
+    const t = uploadTipo.value;
+    return t === 'apunte' ? props.subApuntes : t === 'campus' ? props.subCampus : props.subExamenes;
+});
+const setUploadTipo = (t) => {
+    uploadTipo.value = t;
+    form.subcarpeta_id = null; // la carpeta depende del tipo
+};
 
 // Título "lindo" a partir del nombre de archivo: unidad-3.pdf -> "Unidad 3"
 const titleFromName = (name) => {
@@ -117,6 +128,7 @@ const openUpload = (tipo = 'apunte') => {
     form.clearErrors();
     uploadError.value = '';
     uploadTipo.value = tipo;
+    form.subcarpeta_id = null;
     clearItems();
     showModal.value = true;
 };
@@ -249,6 +261,37 @@ const deleteFolder = async (folder) => {
     });
     if (ok) router.delete(route('subcarpetas.destroy', folder.id), { preserveScroll: true });
 };
+
+// Mover un material a una carpeta / sacarlo (dueño o admin)
+const showMoveModal = ref(false);
+const moveMaterial = ref(null);
+const moveForm = useForm({ subcarpeta_id: null });
+const moveFolders = computed(() => {
+    if (!moveMaterial.value) return [];
+    const t = moveMaterial.value.tipo;
+    return t === 'apunte' ? props.subApuntes : t === 'campus' ? props.subCampus : props.subExamenes;
+});
+const moveCurrentId = computed(() => moveMaterial.value?.subcarpeta_id ?? null);
+const moveChanged = computed(() => moveForm.subcarpeta_id !== moveCurrentId.value);
+
+const openMove = (material) => {
+    moveForm.clearErrors();
+    moveMaterial.value = material;
+    moveForm.subcarpeta_id = material.subcarpeta_id ?? null; // arranca en la ubicación actual
+    showMoveModal.value = true;
+};
+const closeMove = () => {
+    showMoveModal.value = false;
+    moveMaterial.value = null;
+};
+const submitMove = () => {
+    if (!moveMaterial.value || !moveChanged.value) return;
+    moveForm.patch(route('materiales.move', moveMaterial.value.id), {
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess: () => closeMove(),
+    });
+};
 </script>
 
 <template>
@@ -317,6 +360,7 @@ const deleteFolder = async (folder) => {
                 @delete-folder="deleteFolder"
                 @delete="destroy"
                 @edit="openEdit"
+                @move="openMove"
                 @comments="openMaterialId = $event.id"
                 @vote="vote"
                 @favorite="favorite"
@@ -336,6 +380,7 @@ const deleteFolder = async (folder) => {
                 @delete-folder="deleteFolder"
                 @delete="destroy"
                 @edit="openEdit"
+                @move="openMove"
                 @comments="openMaterialId = $event.id"
                 @vote="vote"
                 @favorite="favorite"
@@ -355,6 +400,7 @@ const deleteFolder = async (folder) => {
                 @delete-folder="deleteFolder"
                 @delete="destroy"
                 @edit="openEdit"
+                @move="openMove"
                 @comments="openMaterialId = $event.id"
                 @vote="vote"
                 @favorite="favorite"
@@ -387,7 +433,7 @@ const deleteFolder = async (folder) => {
                     <div class="mt-2 grid grid-cols-3 gap-2">
                         <button
                             type="button"
-                            @click="uploadTipo = 'apunte'"
+                            @click="setUploadTipo('apunte')"
                             class="rounded-lg border px-3 py-2 text-sm font-semibold transition"
                             :class="uploadTipo === 'apunte' ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-stone-300 text-stone-600 hover:bg-stone-50'"
                         >
@@ -395,7 +441,7 @@ const deleteFolder = async (folder) => {
                         </button>
                         <button
                             type="button"
-                            @click="uploadTipo = 'campus'"
+                            @click="setUploadTipo('campus')"
                             class="rounded-lg border px-3 py-2 text-sm font-semibold transition"
                             :class="uploadTipo === 'campus' ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-stone-300 text-stone-600 hover:bg-stone-50'"
                         >
@@ -403,7 +449,7 @@ const deleteFolder = async (folder) => {
                         </button>
                         <button
                             type="button"
-                            @click="uploadTipo = 'examen'"
+                            @click="setUploadTipo('examen')"
                             class="rounded-lg border px-3 py-2 text-sm font-semibold transition"
                             :class="uploadTipo === 'examen' ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-stone-300 text-stone-600 hover:bg-stone-50'"
                         >
@@ -411,6 +457,19 @@ const deleteFolder = async (folder) => {
                         </button>
                     </div>
                     <InputError class="mt-2" :message="form.errors.tipo" />
+                </div>
+
+                <!-- Carpeta destino (opcional) -->
+                <div v-if="uploadFolders.length" class="mt-4">
+                    <InputLabel for="upload-carpeta" value="Carpeta (opcional)" />
+                    <select
+                        id="upload-carpeta"
+                        v-model="form.subcarpeta_id"
+                        class="mt-1 block w-full rounded-lg border-stone-300 shadow-sm focus:border-brand-500 focus:ring-brand-500"
+                    >
+                        <option :value="null">Sin carpeta (Otros archivos)</option>
+                        <option v-for="f in uploadFolders" :key="f.id" :value="f.id">📁 {{ f.nombre }}</option>
+                    </select>
                 </div>
 
                 <!-- Dropzone -->
@@ -649,6 +708,61 @@ const deleteFolder = async (folder) => {
                     </PrimaryButton>
                 </div>
             </form>
+        </Modal>
+
+        <!-- Modal mover a carpeta -->
+        <Modal :show="showMoveModal" @close="closeMove">
+            <div v-if="moveMaterial" class="p-6">
+                <h2 class="text-lg font-semibold text-ink">Mover a carpeta</h2>
+                <p class="mt-1 truncate text-sm text-stone-500">{{ moveMaterial.titulo }}</p>
+
+                <div class="mt-5 space-y-1">
+                    <button
+                        type="button"
+                        @click="moveForm.subcarpeta_id = null"
+                        class="flex w-full items-center justify-between gap-2 rounded-lg border px-3 py-2.5 text-left text-sm transition"
+                        :class="moveForm.subcarpeta_id === null ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-stone-200 text-stone-600 hover:bg-stone-50'"
+                    >
+                        <span>📄 Otros archivos (sin carpeta)</span>
+                        <span class="shrink-0 text-xs">
+                            <span v-if="moveForm.subcarpeta_id === null" class="font-semibold text-brand-600">✓</span>
+                            <span v-else-if="moveCurrentId === null" class="text-stone-400">Actual</span>
+                        </span>
+                    </button>
+
+                    <button
+                        v-for="f in moveFolders"
+                        :key="f.id"
+                        type="button"
+                        @click="moveForm.subcarpeta_id = f.id"
+                        class="flex w-full items-center justify-between gap-2 rounded-lg border px-3 py-2.5 text-left text-sm transition"
+                        :class="moveForm.subcarpeta_id === f.id ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-stone-200 text-stone-600 hover:bg-stone-50'"
+                    >
+                        <span class="min-w-0 truncate">📁 {{ f.nombre }}</span>
+                        <span class="shrink-0 text-xs">
+                            <span v-if="moveForm.subcarpeta_id === f.id" class="font-semibold text-brand-600">✓</span>
+                            <span v-else-if="moveCurrentId === f.id" class="text-stone-400">Actual</span>
+                        </span>
+                    </button>
+                </div>
+
+                <p v-if="moveFolders.length === 0" class="mt-3 text-sm text-stone-400">
+                    Todavía no hay carpetas en esta sección. La admin puede crear una con "📁 Nueva carpeta".
+                </p>
+
+                <div class="mt-6 flex justify-end gap-3">
+                    <SecondaryButton type="button" @click="closeMove">Cancelar</SecondaryButton>
+                    <PrimaryButton
+                        type="button"
+                        @click="submitMove"
+                        :disabled="!moveChanged || moveForm.processing"
+                        :class="{ 'opacity-75': !moveChanged || moveForm.processing }"
+                    >
+                        <Spinner v-if="moveForm.processing" class="-ms-1 me-2" />
+                        Mover
+                    </PrimaryButton>
+                </div>
+            </div>
         </Modal>
     </AuthenticatedLayout>
 </template>
