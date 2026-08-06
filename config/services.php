@@ -48,6 +48,10 @@ return [
         'url' => env('DOCUMIND_URL'),
         'service_key' => env('DOCUMIND_SERVICE_KEY'),
         'timeout' => (int) env('DOCUMIND_TIMEOUT', 30),
+        // Límite de subida de DocuMind (MB): archivos más grandes se marcan 'skipped'.
+        'max_mb' => (int) env('DOCUMIND_MAX_MB', 20),
+        // Extensiones que DocuMind sabe procesar (PDF/DOCX/TXT/MD, sin OCR).
+        'extensions' => ['pdf', 'txt', 'md', 'docx'],
     ],
 
 ];

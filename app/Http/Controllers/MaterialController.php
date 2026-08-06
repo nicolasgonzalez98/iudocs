@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\DeleteMaterialFromDocumind;
+use App\Jobs\SyncMaterialToDocumind;
 use App\Models\Material;
 use App\Models\Materia;
 use App\Models\Subcarpeta;
+use App\Services\Documind\DocumindClient;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -46,11 +49,14 @@ class MaterialController extends Controller
                 ->find($data['subcarpeta_id'])?->id;
         }
 
-        DB::transaction(function () use ($request, $materia, $data, $subcarpetaId) {
+        $documindEnabled = app(DocumindClient::class)->enabled();
+        $created = [];
+
+        DB::transaction(function () use ($request, $materia, $data, $subcarpetaId, $documindEnabled, &$created) {
             foreach ($data['files'] as $i => $file) {
                 $path = $file->store("materiales/{$materia->id}");
 
-                $materia->materials()->create([
+                $material = $materia->materials()->create([
                     'user_id' => $request->user()->id,
                     'subcarpeta_id' => $subcarpetaId,
                     'tipo' => $data['tipo'],
@@ -61,8 +67,21 @@ class MaterialController extends Controller
                     'mime' => $file->getClientMimeType(),
                     'size' => $file->getSize(),
                 ]);
+
+                if ($documindEnabled) {
+                    $material->forceFill(['documind_status' => Material::DOCUMIND_PENDING])->save();
+                }
+                $created[] = $material;
             }
         });
+
+        // Encolamos el sync DESPUÉS del commit: así el worker nunca ve un material
+        // que todavía no existe en la DB.
+        if ($documindEnabled) {
+            foreach ($created as $material) {
+                SyncMaterialToDocumind::dispatch($material->id);
+            }
+        }
 
         return back();
     }
@@ -233,7 +252,14 @@ class MaterialController extends Controller
     {
         abort_unless($request->user()->can('delete', $material), 403);
 
+        // Guardamos el id de DocuMind ANTES de borrar (el registro deja de existir).
+        $documindId = $material->documind_document_id;
+
         $material->delete();
+
+        if (! empty($documindId) && app(DocumindClient::class)->enabled()) {
+            DeleteMaterialFromDocumind::dispatch($documindId);
+        }
 
         return back();
     }
