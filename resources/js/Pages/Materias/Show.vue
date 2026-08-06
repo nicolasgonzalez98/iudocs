@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import CommentsPanel from '@/Components/CommentsPanel.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
+import MateriaChat from '@/Components/MateriaChat.vue';
 import MaterialSection from '@/Components/MaterialSection.vue';
 import Modal from '@/Components/Modal.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
@@ -26,6 +27,7 @@ const props = defineProps({
     subCampus: { type: Array, default: () => [] },
     subExamenes: { type: Array, default: () => [] },
     canExamenes: { type: Boolean, default: true },
+    canChat: { type: Boolean, default: false },
 });
 
 const isAdmin = computed(() => usePage().props.auth.user.role === 'admin');
@@ -804,5 +806,8 @@ const reorderFolders = ({ tipo, ids }) => {
                 </div>
             </div>
         </Modal>
+
+        <!-- Asistente RAG (chat por materia) — solo si está habilitado para el usuario -->
+        <MateriaChat v-if="canChat" :materia-id="materia.id" :materia-nombre="materia.nombre" />
     </AuthenticatedLayout>
 </template>

@@ -137,6 +137,7 @@ class MateriaController extends Controller
         return Inertia::render('Materias/Show', [
             'materia' => $materia->only('id', 'nombre', 'anio', 'cuatrimestre', 'catedra', 'color', 'icon'),
             'canExamenes' => $canExamenes,
+            'canChat' => app(\App\Services\Documind\DocumindClient::class)->chatAllowedFor($user->isAdmin()),
             'apuntes' => $materials->where('tipo', 'apunte')->map($map)->values(),
             'campus' => $materials->where('tipo', 'campus')->map($map)->values(),
             'examenes' => $canExamenes ? $materials->where('tipo', 'examen')->map($map)->values() : [],
