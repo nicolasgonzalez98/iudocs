@@ -19,6 +19,7 @@ class AppServiceProvider extends ServiceProvider
                 key: config('services.documind.service_key'),
                 timeout: (int) config('services.documind.timeout', 30),
                 enabled: (bool) config('services.documind.enabled', false),
+                chatMode: (string) config('services.documind.chat_mode', 'off'),
             );
         });
     }

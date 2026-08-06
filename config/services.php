@@ -52,6 +52,9 @@ return [
         'max_mb' => (int) env('DOCUMIND_MAX_MB', 20),
         // Extensiones que DocuMind sabe procesar (PDF/DOCX/TXT/MD, sin OCR).
         'extensions' => ['pdf', 'txt', 'md', 'docx'],
+        // Quién puede usar el chat: 'off' (nadie) | 'admin' (solo admins) | 'all'
+        // (cualquier usuario). Default admin para controlar costos del free-tier.
+        'chat_mode' => env('DOCUMIND_CHAT_MODE', 'admin'),
     ],
 
 ];

@@ -19,6 +19,7 @@ class DocumindClient
         private readonly ?string $key,
         private readonly int $timeout = 30,
         private readonly bool $enabled = false,
+        private readonly string $chatMode = 'off',
     ) {
     }
 
@@ -26,6 +27,23 @@ class DocumindClient
     public function enabled(): bool
     {
         return $this->enabled && ! empty($this->url) && ! empty($this->key);
+    }
+
+    /**
+     * ¿Puede usar el chat este usuario, según el modo configurado?
+     * off = nadie · admin = solo admins · all = cualquiera.
+     */
+    public function chatAllowedFor(bool $isAdmin): bool
+    {
+        if (! $this->enabled()) {
+            return false;
+        }
+
+        return match ($this->chatMode) {
+            'all' => true,
+            'admin' => $isAdmin,
+            default => false,
+        };
     }
 
     private function http(): PendingRequest
@@ -91,6 +109,31 @@ class DocumindClient
 
         if ($response->status() !== 404) {
             $response->throw();
+        }
+    }
+
+    /**
+     * Consulta el chat RAG (streaming SSE) y va pasando cada trozo crudo del stream
+     * a $onChunk. Scopea la búsqueda a la allow-list de documentos permitidos.
+     *
+     * @param  array<int, string>  $documentIds  Allow-list (document_ids de DocuMind).
+     * @param  callable(string):void  $onChunk    Recibe cada fragmento del stream SSE.
+     */
+    public function streamChat(string $question, array $documentIds, callable $onChunk): void
+    {
+        $response = $this->http()
+            ->withOptions(['stream' => true, 'timeout' => 120])
+            ->post('/chat/query', [
+                'question' => $question,
+                'document_ids' => array_values($documentIds),
+            ]);
+
+        $body = $response->toPsrResponse()->getBody();
+        while (! $body->eof()) {
+            $chunk = $body->read(8192);
+            if ($chunk !== '') {
+                $onChunk($chunk);
+            }
         }
     }
 

@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\DocumindController as AdminDocumindController;
 use App\Http\Controllers\Admin\MateriaController as AdminMateriaController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\DocumindChatController;
 use App\Http\Controllers\MateriaController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\ProfileController;
@@ -36,6 +37,9 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::post('/materiales/{material}/voto', [MaterialController::class, 'toggleVote'])->name('materiales.vote');
     Route::post('/materiales/{material}/favorito', [MaterialController::class, 'toggleFavorite'])->name('materiales.favorite');
     Route::get('/mis-apuntes', [MaterialController::class, 'mine'])->name('materiales.mine');
+
+    // Chat RAG (asistente) por materia — streaming SSE relayado desde DocuMind
+    Route::post('/materias/{materia}/chat', [DocumindChatController::class, 'ask'])->name('materias.chat');
     Route::patch('/materiales/{material}', [MaterialController::class, 'update'])->name('materiales.update');
     Route::patch('/materiales/{material}/mover', [MaterialController::class, 'move'])->name('materiales.move');
     Route::patch('/materias/{materia}/mover-materiales', [MaterialController::class, 'moveBatch'])->name('materiales.move-batch');
