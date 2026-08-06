@@ -68,6 +68,22 @@ class DocumindClient
         return (string) $response->json('id');
     }
 
+    /**
+     * Lista documentos de la organización de servicio (con su estado real de ingesta:
+     * pending / processing / ready / error + error_message). Filtra por colección si se pasa.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function listDocuments(?string $collectionId = null): array
+    {
+        $query = [];
+        if ($collectionId !== null && $collectionId !== '') {
+            $query['collection_id'] = $collectionId;
+        }
+
+        return $this->http()->get('/documents', $query)->throw()->json();
+    }
+
     /** Borra un documento en DocuMind. 404 se tolera (idempotente). */
     public function deleteDocument(string $documindId): void
     {

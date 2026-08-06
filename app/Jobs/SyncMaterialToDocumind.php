@@ -74,10 +74,13 @@ class SyncMaterialToDocumind implements ShouldQueue
                 collectionId: (string) $material->materia_id,
             );
 
+            // OJO: el upload solo ENCOLA la ingesta en DocuMind (async). Todavía no
+            // está indexado → queda 'pending'. El estado real (synced/error) lo
+            // confirma `documind:reconcile` leyendo el estado de DocuMind.
             $material->forceFill([
                 'documind_document_id' => $documindId,
-                'documind_status' => Material::DOCUMIND_SYNCED,
-                'documind_synced_at' => now(),
+                'documind_status' => Material::DOCUMIND_PENDING,
+                'documind_synced_at' => null,
                 'documind_error' => null,
             ])->save();
         } catch (\Throwable $e) {
