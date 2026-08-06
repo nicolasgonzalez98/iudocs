@@ -9,9 +9,15 @@ const props = defineProps({
 });
 
 const META = {
+    // Estados de usuario
     active: { label: 'Activo', class: 'bg-green-100 text-green-700', dot: 'bg-green-500' },
     pending: { label: 'Pendiente', class: 'bg-amber-100 text-amber-700', dot: 'bg-amber-500' },
     blocked: { label: 'Bloqueado', class: 'bg-red-100 text-red-700', dot: 'bg-red-500' },
+    // Estados de sincronización con DocuMind
+    synced: { label: 'Sincronizado', class: 'bg-green-100 text-green-700', dot: 'bg-green-500' },
+    error: { label: 'Error', class: 'bg-red-100 text-red-700', dot: 'bg-red-500' },
+    skipped: { label: 'Omitido', class: 'bg-stone-100 text-stone-600', dot: 'bg-stone-400' },
+    unsynced: { label: 'Sin sincronizar', class: 'bg-stone-100 text-stone-500', dot: 'bg-stone-300' },
 };
 
 const meta = computed(

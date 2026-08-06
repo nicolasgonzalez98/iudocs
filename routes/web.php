@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\CarreraController as AdminCarreraController;
+use App\Http\Controllers\Admin\DocumindController as AdminDocumindController;
 use App\Http\Controllers\Admin\MateriaController as AdminMateriaController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\CommentController;
@@ -96,6 +97,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/carreras', [AdminCarreraController::class, 'store'])->name('carreras.store');
     Route::patch('/carreras/{carrera}', [AdminCarreraController::class, 'update'])->name('carreras.update');
     Route::delete('/carreras/{carrera}', [AdminCarreraController::class, 'destroy'])->name('carreras.destroy');
+
+    // Sincronización con DocuMind (motor RAG)
+    Route::get('/documind', [AdminDocumindController::class, 'index'])->name('documind');
+    Route::post('/documind/reconcile', [AdminDocumindController::class, 'reconcile'])->name('documind.reconcile');
+    Route::post('/documind/sync-all', [AdminDocumindController::class, 'syncAll'])->name('documind.sync-all');
+    Route::post('/documind/{material}/resync', [AdminDocumindController::class, 'resync'])->name('documind.resync');
 });
 
 require __DIR__.'/auth.php';
