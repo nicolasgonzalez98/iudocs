@@ -41,4 +41,13 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    // DocuMind: motor RAG externo. IUDocs le sincroniza los materiales (ingesta)
+    // y consulta el chat, autenticándose como servicio con la X-Service-Key.
+    'documind' => [
+        'enabled' => env('DOCUMIND_ENABLED', false),
+        'url' => env('DOCUMIND_URL'),
+        'service_key' => env('DOCUMIND_SERVICE_KEY'),
+        'timeout' => (int) env('DOCUMIND_TIMEOUT', 30),
+    ],
+
 ];

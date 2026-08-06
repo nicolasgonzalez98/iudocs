@@ -10,6 +10,12 @@ use Illuminate\Support\Facades\Storage;
 
 class Material extends Model
 {
+    // Estados de sincronización con DocuMind (columna documind_status).
+    public const DOCUMIND_PENDING = 'pending';   // encolado, esperando sync
+    public const DOCUMIND_SYNCED = 'synced';     // indexado en DocuMind
+    public const DOCUMIND_ERROR = 'error';       // falló el sync (ver documind_error)
+    public const DOCUMIND_SKIPPED = 'skipped';   // no aplica (tipo/tamaño no soportado)
+
     protected $fillable = [
         'materia_id',
         'subcarpeta_id',
@@ -23,12 +29,15 @@ class Material extends Model
         'size',
         'downloads',
     ];
+    // Nota: los campos documind_* NO son fillable a propósito (los setea el sistema,
+    // no vienen de input del usuario).
 
     protected function casts(): array
     {
         return [
             'size' => 'integer',
             'downloads' => 'integer',
+            'documind_synced_at' => 'datetime',
         ];
     }
 
