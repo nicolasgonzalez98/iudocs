@@ -111,8 +111,8 @@ const TIPO_LABEL = { apunte: 'Apunte', examen: 'Examen', campus: 'Campus' };
                 </span>
             </div>
 
-            <!-- Tabla -->
-            <div class="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm">
+            <!-- Tabla (scroll horizontal en pantallas chicas para no cortar la acción) -->
+            <div class="overflow-x-auto rounded-xl border border-stone-200 bg-white shadow-sm">
                 <table class="min-w-full divide-y divide-stone-200">
                     <thead class="bg-stone-50">
                         <tr class="text-left text-xs font-semibold uppercase tracking-wide text-stone-500">
@@ -144,8 +144,8 @@ const TIPO_LABEL = { apunte: 'Apunte', examen: 'Examen', campus: 'Campus' };
                                     {{ m.error }}
                                 </div>
                             </td>
-                            <td class="px-4 py-3 text-stone-500">{{ m.synced_at ?? '—' }}</td>
-                            <td class="px-4 py-3 text-right">
+                            <td class="whitespace-nowrap px-4 py-3 text-stone-500">{{ m.synced_at ?? '—' }}</td>
+                            <td class="whitespace-nowrap px-4 py-3 text-right">
                                 <button
                                     type="button"
                                     :disabled="busyId === m.id"

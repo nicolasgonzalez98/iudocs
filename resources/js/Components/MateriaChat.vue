@@ -228,26 +228,38 @@ async function send(text) {
                                 </template>
                             </div>
 
-                            <!-- Fuentes -->
-                            <div v-if="m.sources && m.sources.length" class="space-y-1">
+                            <!-- Fuentes (expandibles: muestran el fragmento citado) -->
+                            <div v-if="m.sources && m.sources.length" class="space-y-1.5">
                                 <p class="text-[11px] font-semibold uppercase tracking-wide text-stone-400">
                                     Fuentes
                                     <span v-if="m.confidence != null" class="ml-1 font-normal normal-case text-stone-400">
                                         · confianza {{ Math.round(m.confidence * 100) }}%
                                     </span>
                                 </p>
-                                <ul class="flex flex-wrap gap-1.5">
-                                    <li
-                                        v-for="s in m.sources"
-                                        :key="s.n"
-                                        class="inline-flex items-center gap-1 rounded-md border border-stone-200 bg-white px-2 py-1 text-[11px] text-stone-600"
-                                        :title="s.text"
+                                <details
+                                    v-for="s in m.sources"
+                                    :key="s.n"
+                                    class="group overflow-hidden rounded-lg border border-stone-200 bg-white"
+                                >
+                                    <summary
+                                        class="flex cursor-pointer list-none items-center gap-1.5 px-2.5 py-1.5 text-[11px] text-stone-600 [&::-webkit-details-marker]:hidden"
                                     >
                                         <span class="font-semibold text-brand-600">[{{ s.n }}]</span>
-                                        <span class="max-w-[12rem] truncate">{{ s.filename }}</span>
-                                        <span v-if="s.page" class="text-stone-400">· p.{{ s.page }}</span>
-                                    </li>
-                                </ul>
+                                        <span class="min-w-0 flex-1 truncate">{{ s.filename }}</span>
+                                        <span v-if="s.page" class="shrink-0 text-stone-400">p.{{ s.page }}</span>
+                                        <svg
+                                            class="h-3.5 w-3.5 shrink-0 text-stone-400 transition group-open:rotate-180"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                        >
+                                            <path d="M6 9l6 6 6-6" />
+                                        </svg>
+                                    </summary>
+                                    <p
+                                        class="whitespace-pre-wrap border-t border-stone-100 bg-stone-50/60 px-2.5 py-2 text-[11px] leading-relaxed text-stone-600"
+                                    >
+                                        {{ s.text }}
+                                    </p>
+                                </details>
                             </div>
                         </div>
                     </div>
